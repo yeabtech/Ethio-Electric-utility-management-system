@@ -21,8 +21,7 @@ export default function SignInPage() {
                 footerActionLink: 'text-[#498CA5] hover:text-[#174B5A]'
               }
             }}
-            routing="path"
-            path="/sign-in"
+            routing="hash"
             signUpUrl="/sign-up"
             redirectUrl="/"
           />

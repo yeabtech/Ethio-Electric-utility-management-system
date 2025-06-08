@@ -16,6 +16,12 @@ export const ourFileRouter = {
     .onUploadComplete(({ file }) => {
       console.log("verification file uploaded", file.ufsUrl);
     }),
+  newsImage: f({
+    image: { maxFileSize: "4MB", maxFileCount: 1 }
+  })
+    .onUploadComplete(({ file }) => {
+      console.log("news image uploaded", file.ufsUrl);
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

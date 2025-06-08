@@ -32,6 +32,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/technician/tasks/[id]/status",
   "/api/technician/tasks/(.*)",
   "/api/customer/services/repairs",
+  "/api/manager/employee",
+  "/api/manager/news",
 ]);
 
 // Special routes for verification

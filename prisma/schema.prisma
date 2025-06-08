@@ -214,3 +214,12 @@ enum ServiceType {
   SERVICE_ESCALATION
   INFO_UPDATE
 }
+
+model News {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Sidebar from './components/sidebar';
 import RegisterPage from './register/page';
+import EmployeePage from './employee/page';
 import "@/app/globals.css"
 
 export default function ManagerPage() {
@@ -13,12 +14,14 @@ export default function ManagerPage() {
       case 'Dashboard':
         return (
           <div className="bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-2xl font-semibold mb-4">Manager Dashboard</h2>
-            <p>Welcome to your Manager dashboard</p>
+            <h2 className="text-2xl text-black font-semibold mb-4">Manager Dashboard</h2>
+            <p className='text-black'>Welcome to your Manager dashboard</p>
           </div>
         );
       case 'Register Employee':
         return <RegisterPage />;
+      case 'Employees':
+        return <EmployeePage />;
       // Add more cases for other pages as they are implemented
       default:
         return (

@@ -2,10 +2,20 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Loader2, ShieldCheck } from 'lucide-react'
 import { useTheme } from '@/app/context/ThemeContext'
+import { useEffect, useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 type Verification = {
   status: 'pending' | 'approved' | 'rejected' | 'not_verified'
   rejectionReason?: string | null
+  createdAt: string
+}
+
+interface NewsArticle {
+  id: string
+  title: string
+  content: string
+  imageUrl: string | null
   createdAt: string
 }
 
@@ -17,6 +27,27 @@ interface HomePageProps {
 export default function HomePage({ verification, loading }: HomePageProps) {
   const router = useRouter()
   const { theme } = useTheme()
+  const [news, setNews] = useState<NewsArticle[]>([])
+  const [loadingNews, setLoadingNews] = useState(true)
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const response = await fetch('/api/news')
+        if (!response.ok) {
+          throw new Error('Failed to fetch news')
+        }
+        const data = await response.json()
+        setNews(data)
+      } catch (error) {
+        console.error('Error fetching news:', error)
+      } finally {
+        setLoadingNews(false)
+      }
+    }
+
+    fetchNews()
+  }, [])
 
   if (loading) {
     return (
@@ -60,6 +91,48 @@ export default function HomePage({ verification, loading }: HomePageProps) {
                 {isRejected ? 'Resubmit Verification' : 'Verify Account'}
               </Button>
             </div>
+          )}
+        </div>
+
+        {/* News Section - Shown to all users */}
+        <div className="bg-card p-6 rounded-lg border border-border shadow-sm">
+          <h2 className="text-xl font-semibold text-foreground mb-4">Latest News</h2>
+          {loadingNews ? (
+            <div className="flex justify-center items-center h-40">
+              <Loader2 className="animate-spin w-6 h-6 text-muted-foreground" />
+            </div>
+          ) : news.length > 0 ? (
+            <div className="grid gap-4">
+              {news.map((article) => (
+                <Card key={article.id} className="overflow-hidden">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-bold text-foreground">
+                      {article.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {article.imageUrl && (
+                      <div className="mb-4">
+                        <img
+                          src={article.imageUrl}
+                          alt={article.title}
+                          className="w-full h-48 object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
+                    <div
+                      className="prose max-w-none text-foreground text-sm"
+                      dangerouslySetInnerHTML={{ __html: article.content }}
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Published on: {new Date(article.createdAt).toLocaleDateString()}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-4">No news articles available at the moment.</p>
           )}
         </div>
 

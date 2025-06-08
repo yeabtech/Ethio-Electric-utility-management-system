@@ -93,12 +93,12 @@ export default function Home() {
 
       {/* Main Heading */}
       <h1 className="text-4xl sm:text-5xl font-extrabold text-[#164253] leading-tight mb-2 text-center">
-        <span className="text-[#E3F3FB]">Streamline</span> Your Workforce & Operations
+        <span className="text-[#E3F3FB]">New</span> Generation of Services
       </h1>
 
       {/* Subheading */}
       <p className="text-lg sm:text-xl text-[#A0C1CB] mb-8 text-center">
-        Manage employees, customers, and services efficiently with our powerful tools.
+        We Manage Your Services Efficiently With Our Powerful Tools.
       </p>
 
       {/* CTA Section */}

@@ -21,6 +21,7 @@ export default function Loading() {
             width={80}
             height={80}
             priority
+            unoptimized={true}
             style={styles.loader}
           />
         </div>

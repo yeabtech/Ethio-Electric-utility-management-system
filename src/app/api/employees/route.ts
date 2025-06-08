@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { clerkClient } from '@clerk/clerk-sdk-node'
 
 export async function GET() {
   try {
@@ -18,9 +19,20 @@ export async function GET() {
       }
     })
 
+    // Enhance employees with Clerk data
+    const enhancedEmployees = await Promise.all(
+      employees.map(async (employee) => {
+        const clerkUser = await clerkClient.users.getUser(employee.clerkUserId)
+        return {
+          ...employee,
+          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'N/A'
+        }
+      })
+    )
+
     return NextResponse.json({ 
       success: true,
-      employees
+      employees: enhancedEmployees
     })
   } catch (error: any) {
     console.error('Error fetching employees:', error)
