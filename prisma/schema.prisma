@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String                 @id @default(cuid())
+  clerkUserId       String                 @unique
+  email             String                 @unique
+  role              String
+  isVerified        Boolean                @default(false)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  technician        Technician?  
+  verification      CustomerVerification[] @relation("UserVerifications")
+  employeeInfo      EmployeeInfo?
+  services          ServiceApplication[]
+  receiptCustomers  Receipt[]              @relation("ReceiptCustomer")
+  approvedReceipts  Receipt[]              @relation("ReceiptApprover")
+  tasks             Task[]                 @relation("TaskCustomer")   // Added this
+  assignedTasks     Task[]                 @relation("TaskAssigner")   // Added this
+}
+
+model CustomerVerification {
+  id              String   @id @default(cuid())
+  userId          String
+  firstName       String
+  middleName      String?
+  lastName        String
+  gender          String
+  dateOfBirth     DateTime
+  mobileNumber    String
+  idType          String
+  idNumber        String
+  region          String
+  subCity         String
+  woreda          String
+  kebele          String
+  homeNumber      String
+  nationality     String
+  personalPhoto   String
+  idPhotoFront    String
+  idPhotoBack     String?
+  status          String   @default("NotVerified")
+  rejectionReason String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation("UserVerifications", fields: [userId], references: [id])
+}
+
+model EmployeeInfo {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  subCity   String
+  woreda    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model ServiceApplication {
+  id              String   @id @default(cuid())
+  userId          String
+  category        String
+  serviceType     String
+  status          String   @default("pending")
+  documents       String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  metadata        Json?
+  rejectionReason String?
+
+  user            User     @relation(fields: [userId], references: [id])
+  receipt         Receipt? @relation("ServiceReceipt")
+  task             Task?
+}
+
+model ConnectionPricing {
+  id             String  @id @default(cuid())
+  connectionType String
+  voltageLevel   String
+  cost           Float
+
+  @@unique([connectionType, voltageLevel])
+}
+
+model VoltageRate {
+  id      String  @id @default(cuid())
+  voltage String  @unique
+  rate    Float
+}
+
+model Receipt {
+  id               String             @id @default(cuid())
+  serviceId        String             @unique
+  service          ServiceApplication @relation("ServiceReceipt",fields: [serviceId], references: [id])
+
+  customerId       String
+  customer         User               @relation("ReceiptCustomer", fields: [customerId], references: [id])
+
+  connectionType   String
+  voltageLevel     String
+  baseCost         Float
+  voltageRate      Float
+  totalAmount      Float
+  taxAmount        Float
+  grandTotal       Float
+
+  status           ReceiptStatus      @default(pending)
+
+  approvedById     String?
+  approvedBy       User?              @relation("ReceiptApprover", fields: [approvedById], references: [id])
+  approvedAt       DateTime?
+  task             Task?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model Technician {
+  id          String     @id @default(cuid())
+  userId      String     @unique
+  user        User       @relation(fields: [userId], references: [id])
+  subCity     String     // Sub-city assignment
+  woreda      String     // Woreda assignment
+  skills      String[]   // e.g. ["installation", "repair", "maintenance"]
+  status      TechnicianStatus @default(available) // available, assigned, on_leave
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  tasks       Task[]
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  technicianId String
+  technician   Technician @relation(fields: [technicianId], references: [id])
+  serviceId    String     @unique
+  service      ServiceApplication @relation(fields: [serviceId], references: [id])
+  receiptId    String     @unique
+  receipt      Receipt    @relation(fields: [receiptId], references: [id])
+  customerId   String
+  customer     User       @relation("TaskCustomer",fields: [customerId], references: [id])
+  assignedById String
+  assignedBy   User       @relation("TaskAssigner",fields: [assignedById], references: [id])
+  status       TaskStatus @default(assigned)
+  scheduledAt  DateTime
+  startedAt    DateTime?
+  completedAt  DateTime?
+  report       String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+enum TechnicianStatus {
+  available
+  assigned
+  on_leave
+}
+
+enum TaskStatus {
+  assigned
+  in_progress
+  completed
+  cancelled
+}
+
+
+enum ReceiptStatus {
+  pending
+  approved
+  rejected
+}
+
+enum VerificationStatus {
+  pending
+  approved
+  rejected
+}
+
+enum ServiceCategory {
+  NEW_CONNECTIONS
+  NETWORK_OPERATIONS
+  METERING_BILLING
+  CUSTOMER_SUPPORT
+}
+
+enum ServiceType {
+  NEW_RESIDENTIAL
+  COMMERCIAL_INDUSTRIAL
+  TEMPORARY_POWER
+  ACCESSIBILITY_INSTALL
+  CAPACITY_CHANGE
+  TRANSFORMER_REPAIR
+  SUBSTATION_INSPECTION
+  CABLE_REPAIR
+  TREE_TRIMMING
+  VOLTAGE_COMPLAINT
+  EMERGENCY_REPAIR
+  METER_MALFUNCTION
+  METER_REPLACEMENT
+  METER_READING
+  BILL_DISPUTE
+  PAYMENT_EXTENSION
+  DUPLICATE_BILL
+  OUTAGE_REPORT
+  VOLTAGE_FLUCTUATION
+  GENERAL_COMPLAINT
+  REQUEST_TRACKING
+  SERVICE_ESCALATION
+  INFO_UPDATE
+}
