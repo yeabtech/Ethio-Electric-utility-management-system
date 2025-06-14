@@ -15,6 +15,7 @@ import HomePage from './components/home_page'
 import NewConnectionPage from '../services/new-connection/page'
 import RepairsPage from '../services/repairs/page'
 import Image from 'next/image'
+import TawkToScript from '@/app/components/TawkToScript'
 import '@/app/globals.css'
 
 type Verification = {
@@ -105,6 +106,7 @@ export default function CustomerDashboard() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0b1c26] text-white">
+      <TawkToScript />
       <CustomerSidebar
         verification={verification}
         pendingReceipts={pendingReceipts}
