@@ -180,7 +180,7 @@ export default function ServiceDetailPage() {
       )}
 
       <div className="flex justify-end gap-4">
-        <Button variant="outline" onClick={() => router.push('/cso/services')}>
+        <Button variant="outline" onClick={() => router.push('/cso?activePage=services')}>
           Back to List
         </Button>
       </div>

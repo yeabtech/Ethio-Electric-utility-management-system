@@ -107,6 +107,40 @@ export async function POST(req: NextRequest) {
       }
     })
 
+    // Create receipt for meter replacement
+    if (serviceType === 'METER_REPLACEMENT') {
+      // Get meter pricing
+      const meterPricing = await prisma.meterPricing.findUnique({
+        where: { meterType: metadata.newMeterType }
+      })
+
+      if (!meterPricing) {
+        return NextResponse.json({ error: 'Invalid meter type' }, { status: 400 })
+      }
+
+      const baseCost = meterPricing.price
+      const installationFee = 500 // Fixed installation fee
+      const totalAmount = baseCost + installationFee
+      const taxAmount = totalAmount * 0.15 // 15% tax
+      const grandTotal = totalAmount + taxAmount
+
+      // Create receipt
+      await prisma.receipt.create({
+        data: {
+          serviceId: serviceApplication.id,
+          customerId: user.id,
+          connectionType: 'METER_REPLACEMENT',
+          voltageLevel: 'N/A',
+          baseCost: baseCost,
+          voltageRate: installationFee,
+          totalAmount: totalAmount,
+          taxAmount: taxAmount,
+          grandTotal: grandTotal,
+          status: 'pending'
+        }
+      })
+    }
+
     return NextResponse.json({ 
       success: true,
       message: 'Service request submitted successfully',

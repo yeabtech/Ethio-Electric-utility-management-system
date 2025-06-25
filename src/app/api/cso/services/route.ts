@@ -38,7 +38,9 @@ export async function GET(request: Request) {
                 woreda: true,
                 firstName: true,
                 lastName: true,
-              }
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 1
             }
           }
         }
@@ -46,7 +48,16 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'asc' }
     })
     
-    return NextResponse.json(services)
+    // Flatten the verification array to a single object for each service
+    const flattenedServices = services.map(service => ({
+      ...service,
+      user: {
+        ...service.user,
+        verification: service.user.verification[0] || null
+      }
+    }))
+    
+    return NextResponse.json(flattenedServices)
   } catch (error) {
     console.error('Failed to fetch services:', error)
     return NextResponse.json(

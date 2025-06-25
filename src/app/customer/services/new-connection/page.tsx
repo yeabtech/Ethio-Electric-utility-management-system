@@ -181,51 +181,95 @@ export default function NewConnectionPage() {
   }
 
   const ReceiptPreview = () => (
-    <Card className="mt-6">
+    <Card className="mt-6 max-w-3xl mx-auto">
       <CardHeader className="border-b">
-        <CardTitle className="flex items-center gap-2">
-          <ReceiptIcon className="w-6 h-6 text-primary" />
-          <span>Payment Receipt</span>
-        </CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="flex items-center gap-2">
+            <ReceiptIcon className="w-6 h-6 text-primary" />
+            <span>New Connection Application Receipt</span>
+          </CardTitle>
+          <div className="text-sm text-muted-foreground">
+            Date: {new Date().toLocaleDateString()}
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-500">Connection Type</p>
-              <p className="font-medium">{receipt?.connectionType}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Voltage Level</p>
-              <p className="font-medium">{receipt?.voltageLevel}</p>
-            </div>
-          </div>
-          <div className="border-t pt-4 space-y-2">
-            <div className="flex justify-between">
-              <span>Base Cost:</span>
-              <span>{receipt?.baseCost.toLocaleString()} ETB</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Voltage Rate:</span>
-              <span>{receipt?.voltageRate.toLocaleString()} ETB</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Tax (15%):</span>
-              <span>{receipt?.tax.toLocaleString()} ETB</span>
-            </div>
-            <div className="flex justify-between font-bold border-t pt-2">
-              <span>Total Amount:</span>
-              <span>{receipt?.total.toLocaleString()} ETB</span>
+        <div className="space-y-6">
+          {/* Application Details */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg">Application Details</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Connection Type</p>
+                <p className="font-medium">{receipt?.connectionType}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Voltage Level</p>
+                <p className="font-medium">{receipt?.voltageLevel}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Plot/Land Number</p>
+                <p className="font-medium">{formData.plotNumber}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Estimated Load</p>
+                <p className="font-medium">{formData.estimatedLoad} kW</p>
+              </div>
             </div>
           </div>
-          <div className="pt-4">
-            <p className="text-sm text-gray-500">Submitted Documents:</p>
-            <ul className="list-disc pl-5">
-              {receipt?.documents.map((doc, i) => (<li key={i}>{doc}</li>))}
+
+          {/* Cost Breakdown */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg">Cost Breakdown</h3>
+            <div className="border rounded-lg p-4 space-y-3">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Base Cost:</span>
+                <span className="font-medium">{receipt?.baseCost.toLocaleString()} ETB</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Voltage Rate:</span>
+                <span className="font-medium">{receipt?.voltageRate.toLocaleString()} ETB</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Tax (15%):</span>
+                <span className="font-medium">{receipt?.tax.toLocaleString()} ETB</span>
+              </div>
+              <div className="flex justify-between font-bold border-t pt-3">
+                <span>Total Amount:</span>
+                <span className="text-primary">{receipt?.total.toLocaleString()} ETB</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Submitted Documents */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg">Submitted Documents</h3>
+            <div className="border rounded-lg p-4">
+              <ul className="space-y-2">
+                {receipt?.documents.map((doc, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span className="text-sm">{doc}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Important Notes */}
+          <div className="bg-muted/50 p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Important Notes</h3>
+            <ul className="text-sm space-y-2 text-muted-foreground">
+              <li>• Please keep this receipt for your records</li>
+              <li>• Your application will be processed within 5-7 business days</li>
+              <li>• You will be notified via email about the status of your application</li>
+              <li>• For any queries, please contact our customer service</li>
             </ul>
           </div>
         </div>
-        <div className="mt-6 flex justify-end">
+
+        <div className="mt-8 flex justify-end gap-4">
+          <Button variant="outline" onClick={() => window.print()}>Print Receipt</Button>
           <Button onClick={() => router.push('/customer/dashboard')}>Back to Dashboard</Button>
         </div>
       </CardContent>

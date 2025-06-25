@@ -20,7 +20,6 @@ model User {
   employeeInfo      EmployeeInfo?
   services          ServiceApplication[]
   receiptCustomers  Receipt[]              @relation("ReceiptCustomer")
-  approvedReceipts  Receipt[]              @relation("ReceiptApprover")
   tasks             Task[]                 @relation("TaskCustomer")   // Added this
   assignedTasks     Task[]                 @relation("TaskAssigner")   // Added this
 }
@@ -90,6 +89,15 @@ model ConnectionPricing {
   @@unique([connectionType, voltageLevel])
 }
 
+model MeterPricing {
+  id          String  @id @default(cuid())
+  meterType   String  @unique
+  price       Float
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model VoltageRate {
   id      String  @id @default(cuid())
   voltage String  @unique
@@ -99,7 +107,7 @@ model VoltageRate {
 model Receipt {
   id               String             @id @default(cuid())
   serviceId        String             @unique
-  service          ServiceApplication @relation("ServiceReceipt",fields: [serviceId], references: [id])
+  service          ServiceApplication @relation("ServiceReceipt", fields: [serviceId], references: [id])
 
   customerId       String
   customer         User               @relation("ReceiptCustomer", fields: [customerId], references: [id])
@@ -114,9 +122,11 @@ model Receipt {
 
   status           ReceiptStatus      @default(pending)
 
-  approvedById     String?
-  approvedBy       User?              @relation("ReceiptApprover", fields: [approvedById], references: [id])
-  approvedAt       DateTime?
+  // New fields for Chapa payment
+  txRef            String?            @unique  // Unique transaction reference
+  paid             Boolean            @default(false)
+  paymentDate      DateTime?          // When payment was completed
+  chapaRawResponse Json?              // Store raw Chapa webhook payload if needed
   task             Task?
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt

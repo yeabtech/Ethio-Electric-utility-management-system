@@ -14,6 +14,8 @@ import CustomerSidebar from './components/CustomerSidebar'
 import HomePage from './components/home_page'
 import NewConnectionPage from '../services/new-connection/page'
 import RepairsPage from '../services/repairs/page'
+import RequestResponsePage from '../requestResponse/page'
+import PendingReceiptsPage from '../receipts/page'
 import Image from 'next/image'
 import TawkToScript from '@/app/components/TawkToScript'
 import '@/app/globals.css'
@@ -99,6 +101,10 @@ export default function CustomerDashboard() {
         return <NewConnectionPage />
       case 'repairs':
         return <RepairsPage />
+      case 'request-response':
+        return <RequestResponsePage />
+      case 'pending-receipts':
+        return <PendingReceiptsPage />
       default:
         return <HomePage verification={verification} loading={loading} />
     }

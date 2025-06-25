@@ -38,11 +38,16 @@ export async function GET(req: Request) {
         connectionType: true,
         voltageLevel: true,
         totalAmount: true,
+        grandTotal: true,
         createdAt: true,
+        paid: true,
+        paymentDate: true,
+        txRef: true,
         service: {
           select: {
             serviceType: true,
-            category: true
+            category: true,
+            status: true
           }
         }
       },

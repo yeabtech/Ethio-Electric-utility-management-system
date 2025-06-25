@@ -28,9 +28,9 @@ const SERVICE_CARDS = [
   },
   {
     title: 'Request Response',
-    description: 'Request response',
+    description: 'View your request responses',
     icon: <FileText className="w-6 h-6" style={{ color: '#4ECDC4' }} />,
-    path: '/customer/services/request-response'
+    path: 'request-response'
   }
 ]
 
@@ -132,7 +132,7 @@ export default function CustomerSidebar({
                   className={`w-full flex items-center justify-between px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl ${currentPage === service.path ? 'bg-[var(--sidebar-hover)]' : 'bg-transparent'} hover:bg-[var(--sidebar-hover)] text-[var(--sidebar-text)] border border-transparent shadow-[0_0_10px_rgba(0,0,0,0.2)] transition-all duration-150`} 
                   onClick={() => {
                     setSidebarOpen(false);
-                    if (service.path === 'new-connection' || service.path === 'repairs') {
+                    if (service.path === 'new-connection' || service.path === 'repairs' || service.path === 'request-response') {
                       setCurrentPage(service.path);
                     } else {
                       router.push(service.path);
@@ -153,7 +153,7 @@ export default function CustomerSidebar({
                 className="w-full flex items-center justify-between px-3 md:px-4 py-2 md:py-3 rounded-xl md:rounded-2xl bg-transparent hover:bg-[var(--sidebar-hover)] text-[var(--sidebar-text)] border border-transparent shadow-[0_0_10px_rgba(0,0,0,0.2)] transition-all duration-150"
                 onClick={() => {
                   setSidebarOpen(false)
-                  router.push('/customer/receipts')
+                  setCurrentPage('pending-receipts')
                 }}
               >
                 <span className="text-sm md:text-base font-medium">Pending Receipts</span>

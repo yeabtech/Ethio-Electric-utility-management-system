@@ -18,10 +18,14 @@ export async function GET() {
       return NextResponse.json({ count: 0 }, { status: 404 })
     }
 
+    // Count receipts where service is approved and receipt is not paid
     const count = await prisma.receipt.count({
       where: {
         customerId: user.id,
-        status: 'pending'
+        paid: false,
+        service: {
+          status: 'approved'
+        }
       }
     })
 

@@ -34,6 +34,8 @@ type ApproveService = {
 type Technician = {
   id: string
   user: {
+    id: string
+    email: string
     verification: {
       firstName: string
       lastName: string
@@ -46,8 +48,8 @@ export default function AssignTasksPage() {
   const { user } = useUser()
   const [services, setServices] = useState<ApproveService[]>([])
   const [technicians, setTechnicians] = useState<Technician[]>([])
-  const [selectedTechnician, setSelectedTechnician] = useState('')
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+  const [selectedTechnicians, setSelectedTechnicians] = useState<{ [serviceId: string]: string }>({})
+  const [selectedDates, setSelectedDates] = useState<{ [serviceId: string]: Date | undefined }>({})
   const [loading, setLoading] = useState(true)
   const [assigning, setAssigning] = useState(false)
   const [error, setError] = useState('')
@@ -57,6 +59,7 @@ export default function AssignTasksPage() {
       try {
         const csoRes = await fetch(`/api/employee-info?userId=${user?.id}`)
         const csoData = await csoRes.json()
+        console.log('CSO Data:', csoData)
 
         const servicesRes = await fetch(
           `/api/cso/services/approved?subCity=${csoData.subCity}&woreda=${csoData.woreda}`
@@ -68,6 +71,8 @@ export default function AssignTasksPage() {
           `/api/technicians?subCity=${csoData.subCity}&woreda=${csoData.woreda}&status=available`
         )
         const techData = await techRes.json()
+        console.log('Technician API params:', csoData.subCity, csoData.woreda)
+        console.log('Technician API response:', techData)
         setTechnicians(techData)
 
       } catch (err) {
@@ -81,6 +86,8 @@ export default function AssignTasksPage() {
   }, [user])
 
   const handleAssignTask = async (serviceId: string) => {
+    const selectedTechnician = selectedTechnicians[serviceId]
+    const selectedDate = selectedDates[serviceId]
     if (!selectedTechnician || !selectedDate) {
       setError('Please select technician and schedule date')
       return
@@ -105,7 +112,16 @@ export default function AssignTasksPage() {
       setTechnicians(technicians.map(t =>
         t.id === selectedTechnician ? { ...t, status: 'assigned' } : t
       ))
-      setSelectedTechnician('')
+      setSelectedTechnicians(prev => {
+        const copy = { ...prev }
+        delete copy[serviceId]
+        return copy
+      })
+      setSelectedDates(prev => {
+        const copy = { ...prev }
+        delete copy[serviceId]
+        return copy
+      })
       setError('')
     } catch (err) {
       setError("An error occurred while assigning the task.")
@@ -150,47 +166,55 @@ export default function AssignTasksPage() {
     },
     {
       id: 'actions',
-      cell: ({ row }) => (
-        <div className="flex space-x-2">
-          <Select onValueChange={setSelectedTechnician} value={selectedTechnician}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select technician" />
-            </SelectTrigger>
-            <SelectContent>
-              {technicians.map(tech => (
-                <SelectItem key={tech.id} value={tech.id}>
-                  {tech.user.verification?.[0]?.firstName ?? 'Unknown'} {tech.user.verification?.[0]?.lastName ?? ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      cell: ({ row }) => {
+        const serviceId = row.original.id
+        return (
+          <div className="flex space-x-2">
+            <Select
+              onValueChange={val => setSelectedTechnicians(prev => ({ ...prev, [serviceId]: val }))}
+              value={selectedTechnicians[serviceId] || ''}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select technician" />
+              </SelectTrigger>
+              <SelectContent>
+                {technicians.map(tech => (
+                  <SelectItem key={tech.id} value={tech.id}>
+                    {tech.user.verification?.[0]?.firstName && tech.user.verification?.[0]?.lastName
+                      ? `${tech.user.verification[0].firstName} ${tech.user.verification[0].lastName}`
+                      : tech.user.email ?? 'Unknown'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDate ? format(selectedDate, "PPP") : <span>Pick date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                disabled={(date) => date < new Date()}
-              />
-            </PopoverContent>
-          </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDates[serviceId] ? format(selectedDates[serviceId]!, "PPP") : <span>Pick date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={selectedDates[serviceId]}
+                  onSelect={date => setSelectedDates(prev => ({ ...prev, [serviceId]: date }))}
+                  disabled={(date) => date < new Date()}
+                />
+              </PopoverContent>
+            </Popover>
 
-          <Button 
-            variant="outline"
-            onClick={() => handleAssignTask(row.original.id)}
-            disabled={!selectedTechnician || !selectedDate || assigning}
-          >
-            Assign
-          </Button>
-        </div>
-      )
+            <Button 
+              variant="outline"
+              onClick={() => handleAssignTask(serviceId)}
+              disabled={!selectedTechnicians[serviceId] || !selectedDates[serviceId] || assigning}
+            >
+              Assign
+            </Button>
+          </div>
+        )
+      }
     }
   ]
 

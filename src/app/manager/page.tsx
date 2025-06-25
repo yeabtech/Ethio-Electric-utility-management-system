@@ -22,8 +22,7 @@ export default function ManagerPage() {
         return <RegisterPage />;
       case 'Employees':
         return <EmployeePage />;
-      // Add more cases for other pages as they are implemented
-      default:
+      // code not finishhed
         return (
           <div className="bg-white p-8 rounded-lg shadow-md">
             <p className="text-lg">Welcome to your Manager dashboard</p>

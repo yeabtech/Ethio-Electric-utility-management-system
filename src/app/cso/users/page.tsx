@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface CustomerVerification {
   id: string;
@@ -41,6 +42,7 @@ interface ApiResponse {
 }
 
 export default function UsersPage() {
+  const router = useRouter();
   const [customers, setCustomers] = useState<CustomerVerification[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<CustomerVerification[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,6 +84,10 @@ export default function UsersPage() {
 
   const getFullName = (customer: CustomerVerification) => {
     return `${customer.firstName} ${customer.middleName ? customer.middleName + ' ' : ''}${customer.lastName}`;
+  };
+
+  const handleViewDetails = (customerId: string) => {
+    router.push(`/cso/verifications/${customerId}`);
   };
 
   if (loading) {
@@ -184,9 +190,12 @@ export default function UsersPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    <button
+                      onClick={() => handleViewDetails(customer.id)}
+                      className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition-colors cursor-pointer"
+                    >
                       Approved
-                    </span>
+                    </button>
                   </td>
                 </tr>
               ))}

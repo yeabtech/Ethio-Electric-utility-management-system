@@ -18,14 +18,14 @@ const SERVICE_TYPES = [
   { value: 'METER_MALFUNCTION', label: '🧮 Meter not working' },
   { value: 'METER_REPLACEMENT', label: '🔁 Meter replacement (damaged/expired)' },
   { value: 'BILL_DISPUTE', label: '🧾 Dispute a bill' },
-  { value: 'DUPLICATE_BILL', label: '💸 Request duplicate bill' },
 ]
 
-const METER_TYPES = [
-  { value: 'postpaid', label: 'Postpaid' },
-  { value: 'prepaid', label: 'Prepaid' },
-  { value: 'smart_meter', label: 'Smart Meter' },
-]
+interface MeterPricing {
+  id: string
+  meterType: string
+  price: number
+  description: string | null
+}
 
 export default function RepairsPage() {
   const { user } = useUser()
@@ -39,6 +39,8 @@ export default function RepairsPage() {
   const [files, setFiles] = useState<Record<string, File[]>>({})
   const [hasPendingApplication, setHasPendingApplication] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [showReceipt, setShowReceipt] = useState(false)
+  const [meterPricing, setMeterPricing] = useState<MeterPricing[]>([])
 
   const [serviceType, setServiceType] = useState('')
   const [formData, setFormData] = useState({
@@ -46,6 +48,22 @@ export default function RepairsPage() {
     description: '',
     newMeterType: '',
   })
+
+  // Fetch meter pricing
+  useEffect(() => {
+    const fetchMeterPricing = async () => {
+      try {
+        const res = await fetch('/api/meter-pricing')
+        if (res.ok) {
+          const data = await res.json()
+          setMeterPricing(data)
+        }
+      } catch (error) {
+        console.error('Error fetching meter pricing:', error)
+      }
+    }
+    fetchMeterPricing()
+  }, [])
 
   // Check pending apps
   useEffect(() => {
@@ -207,13 +225,59 @@ export default function RepairsPage() {
                     <SelectValue placeholder="Select meter type" />
                   </SelectTrigger>
                   <SelectContent className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}>
-                    {METER_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
+                    {meterPricing.map((type) => (
+                      <SelectItem key={type.id} value={type.meterType}>
+                        {type.meterType} - ETB {type.price}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className={`mt-6 p-6 rounded-lg border ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>Meter Replacement Receipt</h3>
+                  <Receipt className={`w-6 h-6 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>Meter Type:</span>
+                    <span className={theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}>
+                      {formData.newMeterType || 'Not selected'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>Meter Price:</span>
+                    <span className={theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}>
+                      {formData.newMeterType ? `ETB ${meterPricing.find(t => t.meterType === formData.newMeterType)?.price}` : 'ETB 0'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>Installation Fee:</span>
+                    <span className={theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}>ETB 500</span>
+                  </div>
+                  <div className="border-t my-2 pt-2">
+                    <div className="flex justify-between">
+                      <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>Subtotal:</span>
+                      <span className={theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}>
+                        ETB {formData.newMeterType ? (meterPricing.find(t => t.meterType === formData.newMeterType)?.price || 0) + 500 : 500}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>Tax (15%):</span>
+                      <span className={theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}>
+                        ETB {formData.newMeterType ? ((meterPricing.find(t => t.meterType === formData.newMeterType)?.price || 0) + 500) * 0.15 : 75}
+                      </span>
+                    </div>
+                    <div className="border-t my-2 pt-2">
+                      <div className="flex justify-between font-semibold">
+                        <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>Grand Total:</span>
+                        <span className={theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}>
+                          ETB {formData.newMeterType ? ((meterPricing.find(t => t.meterType === formData.newMeterType)?.price || 0) + 500) * 1.15 : 575}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </>
@@ -255,26 +319,6 @@ export default function RepairsPage() {
                   onChange={handleInputChange}
                   placeholder="Describe your dispute in detail"
                   rows={4}
-                  required
-                  className={`mt-1 md:mt-2 md:text-lg md:p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300 text-black'}`}
-                />
-              </div>
-            </div>
-          </>
-        )
-      
-      case 'DUPLICATE_BILL':
-        return (
-          <>
-            <div className="space-y-4 md:space-y-6">
-              <div>
-                <Label htmlFor="meterNumber" className={`text-sm md:text-base ${theme === 'dark' ? 'text-gray-300' : 'text-black'}`}>Meter Number</Label>
-                <Input
-                  id="meterNumber"
-                  name="meterNumber"
-                  value={formData.meterNumber}
-                  onChange={handleInputChange}
-                  placeholder="Enter your meter number"
                   required
                   className={`mt-1 md:mt-2 md:text-lg md:p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300 text-black'}`}
                 />
@@ -325,14 +369,27 @@ export default function RepairsPage() {
               <h3 className={`font-semibold ${theme === 'dark' ? '' : 'text-black'}`}>Application Submitted Successfully</h3>
               <p className="text-sm">
                 Your repair service request has been submitted. We will process your application shortly.
+                {serviceType === 'METER_REPLACEMENT' && (
+                  <span className="block mt-2 font-medium">
+                    A receipt has been generated for your meter replacement. You can view and pay for it in your receipts section.
+                  </span>
+                )}
               </p>
             </div>
           </div>
         </div>
-        <div className="mt-6 flex justify-end">
+        <div className="mt-6 flex justify-end gap-4">
+          {serviceType === 'METER_REPLACEMENT' && (
+            <Button 
+              onClick={() => router.push('/customer/receipts')} 
+              className={`md:text-lg md:px-8 md:py-6 ${theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'}`}
+            >
+              View Receipts
+            </Button>
+          )}
           <Button 
             onClick={() => router.push('/customer/dashboard')} 
-            className={`md:text-lg md:px-8 md:py-6 ${theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'}`}
+            className={`md:text-lg md:px-8 md:py-6 ${theme === 'dark' ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-500 hover:bg-gray-600'}`}
           >
             Back to Dashboard
           </Button>
@@ -342,69 +399,44 @@ export default function RepairsPage() {
   }
 
   return (
-    <div className={`max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto p-4 ${theme === 'dark' ? 'text-gray-100' : 'text-black'}`}>
-      <Card className={`md:p-4 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white'}`}>
-        <CardHeader className={`border-b md:py-6 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-          <CardTitle className={`text-xl md:text-2xl font-bold ${theme === 'dark' ? '' : 'text-black'}`}>Repairs & Maintenance Services</CardTitle>
+    <div className={`max-w-4xl sm:max-w-5xl md:max-w-6xl lg:max-w-7xl mx-auto p-8 ${theme === 'dark' ? 'text-gray-100' : 'text-black'}`}>
+      <Card className={`md:p-10 shadow-lg ${theme === 'dark' ? 'bg-gray-800/95 border-gray-700' : 'bg-white'}`}>
+        <CardHeader className={`border-b md:py-8 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+          <CardTitle className={`text-xl md:text-2xl font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-black'}`}>
+            Repair Service Request
+          </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 md:p-8">
-          {error && (
-            <div className={`rounded-md border p-4 mb-4 ${theme === 'dark' ? 'bg-red-900/20 border-red-800 text-red-100' : 'bg-red-50 border-red-100 text-black'}`}>
-              <div className="flex items-center space-x-3">
-                <XCircle className={`h-5 w-5 ${theme === 'dark' ? 'text-red-400' : 'text-red-500'}`} />
-                <div>
-                  <h3 className={`font-semibold ${theme === 'dark' ? '' : 'text-black'}`}>Error</h3>
-                  <p className="text-sm">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-6 md:space-y-8">
+        <CardContent className={`py-8 ${theme === 'dark' ? 'text-gray-300' : 'text-black'}`}>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-6">
               <div>
-                <Label htmlFor="serviceType" className={`text-sm md:text-base ${theme === 'dark' ? 'text-gray-300' : 'text-black'}`}>Service Type</Label>
+                <Label htmlFor="serviceType" className={`text-base md:text-lg font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-black'}`}>Service Type</Label>
                 <Select
                   value={serviceType}
-                  onValueChange={setServiceType}
+                  onValueChange={(value) => setServiceType(value)}
                 >
-                  <SelectTrigger className={`mt-1 md:mt-2 md:text-lg md:p-6 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300 text-black'}`}>
+                  <SelectTrigger className={`mt-2 md:mt-3 md:text-lg md:p-6 ${theme === 'dark' ? 'bg-gray-700/50 border-gray-600' : 'bg-white border-gray-300 text-black'}`}>
                     <SelectValue placeholder="Select service type" />
                   </SelectTrigger>
-                  <SelectContent className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200 text-black'}>
+                  <SelectContent className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}>
                     {SERVICE_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value} className={theme === 'dark' ? '' : 'text-black'}>
+                      <SelectItem key={type.value} value={type.value}>
                         {type.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              
-              {serviceType && (
-                <>
-                  <div className={`border-t pt-6 md:pt-8 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-                    {renderForm()}
-                  </div>
-                  
-                  <div className="pt-4 md:pt-6 flex justify-end">
-                    <Button 
-                      type="submit" 
-                      disabled={isSubmitting}
-                      className={`md:text-lg md:px-8 md:py-6 ${theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'}`}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 md:h-5 md:w-5 animate-spin" />
-                          Submitting...
-                        </>
-                      ) : (
-                        'Submit Application'
-                      )}
-                    </Button>
-                  </div>
-                </>
-              )}
+              {renderForm()}
+            </div>
+            <div className="mt-10 flex justify-end">
+              <Button 
+                type="submit"
+                disabled={isSubmitting}
+                className={`md:text-lg md:px-10 md:py-6 rounded-lg ${theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'}`}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit'}
+              </Button>
             </div>
           </form>
         </CardContent>

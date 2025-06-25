@@ -34,6 +34,19 @@ const isPublicRoute = createRouteMatcher([
   "/api/customer/services/repairs",
   "/api/manager/employee",
   "/api/manager/news",
+  "/api/payment/initiate",
+  "/api/payment/verify",
+  "/api/payment/verify-return",
+  "/api/customer/applications",
+  "/api/customer/applications/(.*)",
+  "/api/meter-pricing",
+  "/api/cso/support",
+  "/api/cso/support/(.*)",
+  "/api/tawk/chat",
+  "/api/tawk/chat/(.*)",
+
+  
+  
 ]);
 
 // Special routes for verification
