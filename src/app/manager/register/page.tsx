@@ -1,7 +1,7 @@
 // src/app/manager/page.tsx
 'use client'
 import { useState, useEffect } from 'react'
-import { UserButton } from '@clerk/nextjs'
+
 import { useUser } from '@clerk/nextjs'
 
 // Subcity and Woreda data
@@ -173,11 +173,7 @@ export default function ManagerPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100 p-4">
-      <div className="flex justify-between items-center mb-6 px-4">
-        <h1 className="text-2xl font-bold text-black">Manager Dashboard</h1>
-        <UserButton afterSignOutUrl="/" />
-      </div>
+    
       
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Registration Form */}
@@ -395,6 +391,6 @@ export default function ManagerPage() {
           )}
         </div>
       </div>
-    </div>
+  
   )
 }

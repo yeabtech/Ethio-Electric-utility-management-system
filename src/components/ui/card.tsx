@@ -8,7 +8,7 @@ export const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'rounded-2xl border bg-white p-4 shadow-[0_4px_12px_rgba(0,0,0,0.1)] dark:bg-gray-900 dark:border-gray-800 dark:shadow-[0_4px_12px_rgba(255,255,255,0.1)] overflow-visible text-white',
+      'rounded-2xl border bg-white p-4 shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-visible',
       className
     )}
     {...props}
@@ -23,7 +23,7 @@ export const CardHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'mb-2 flex flex-col space-y-1.5 overflow-visible break-words whitespace-normal text-white',
+      'mb-2 flex flex-col space-y-1.5 overflow-visible break-words whitespace-normal',
       className
     )}
     {...props}
@@ -38,7 +38,7 @@ export const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      'text-lg font-semibold leading-none tracking-tight break-words whitespace-normal text-white',
+      'text-lg font-semibold leading-none tracking-tight break-words whitespace-normal',
       className
     )}
     {...props}
@@ -53,7 +53,7 @@ export const CardContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'pt-2 overflow-visible break-words whitespace-normal text-white',
+      'pt-2 overflow-visible break-words whitespace-normal',
       className
     )}
     {...props}
@@ -68,7 +68,7 @@ export const CardDescription = React.forwardRef<
   <p
     ref={ref}
     className={cn(
-      'text-sm text-gray-300 dark:text-gray-400 break-words whitespace-normal',
+      'text-sm text-gray-500 break-words whitespace-normal',
       className
     )}
     {...props}
@@ -83,7 +83,7 @@ export const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'pt-2 flex items-center overflow-visible break-words whitespace-normal text-white',
+      'pt-2 flex items-center overflow-visible break-words whitespace-normal',
       className
     )}
     {...props}

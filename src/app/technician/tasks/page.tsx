@@ -144,62 +144,62 @@ export default function TechnicianTasksPage() {
 
       {/* Current Task */}
       {currentTask && (
-        <Card className="border-primary">
+        <Card className="border-primary text-black">
           <CardHeader>
             <div className="flex justify-between items-start">
-              <CardTitle>Current Task</CardTitle>
-              <Badge variant="default">In Progress</Badge>
+              <CardTitle className="text-black">Current Task</CardTitle>
+              <Badge variant="default" className="bg-gradient-to-r from-cyan-400 to-blue-400 text-black shadow border-0">In Progress</Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 text-black">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500">Service Type</p>
-                <p className="font-medium">
+                <p className="text-sm text-black">Service Type</p>
+                <p className="font-medium text-black">
                   {currentTask.service ? currentTask.service.serviceType : 'Service type not available'}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Scheduled Date</p>
-                <p className="font-medium">
+                <p className="text-sm text-black">Scheduled Date</p>
+                <p className="font-medium text-black">
                   {new Date(currentTask.scheduledAt).toLocaleDateString()}
                 </p>
               </div>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500">Customer</p>
-              <p className="font-medium">{currentTask.customerName}</p>
-              <p className="text-sm">
+              <p className="text-sm text-black">Customer</p>
+              <p className="font-medium text-black">{currentTask.customerName}</p>
+              <p className="text-sm text-black">
                   Email : {currentTask.customer?.email || 'Email not available'}
               </p>
-              <p className="text-sm">
+              <p className="text-sm text-black">
                    Phone: {currentTask.customer?.verification[0]?.mobileNumber || 'Mobile number not available'}
               </p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500">Location</p>
-              <p className="font-medium">
+              <p className="text-sm text-black">Location</p>
+              <p className="font-medium text-black">
                  kebele: {currentTask.customer?.verification[0]?.kebele}, House: {currentTask.customer?.verification[0]?.homeNumber}
               </p>
-              <p className="text-sm">
+              <p className="text-sm text-black">
                  subCity:{currentTask.customer?.verification[0]?.subCity}, Woreda: {currentTask.customer?.verification[0]?.woreda}
               </p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500">Work Report</p>
+              <p className="text-sm text-black">Work Report</p>
               <Textarea
                 value={report}
                 onChange={(e) => setReport(e.target.value)}
                 placeholder="Describe work done, materials used, issues encountered..."
-                className="mt-1"
+                className="mt-1 text-black"
               />
             </div>
           </CardContent>
           <CardFooter className="flex justify-end">
-            <Button onClick={handleCompleteTask} disabled={updating}>
+            <Button onClick={handleCompleteTask} disabled={updating} className="bg-gradient-to-r from-cyan-400 to-blue-400 text-black shadow border-0">
               {updating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Mark as Completed
             </Button>
@@ -209,41 +209,39 @@ export default function TechnicianTasksPage() {
 
       {/* Assigned Tasks */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Assigned Tasks</h2>
+        <h2 className="text-xl font-semibold text-black">Assigned Tasks</h2>
         {tasks.filter(t => t.status === 'assigned').length === 0 ? (
           <Alert variant='warning'>
             <Clock className="h-4 w-4" />
-            <AlertTitle>No tasks assigned</AlertTitle>
-            <AlertDescription>
-              You'll see new tasks here when they're assigned to you.
-            </AlertDescription>
+            <AlertTitle><span className="text-black">No tasks assigned</span></AlertTitle>
+            <AlertDescription><span className="text-black">You'll see new tasks here when they're assigned to you.</span></AlertDescription>
           </Alert>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tasks.filter(t => t.status === 'assigned').map(task => (
-              <Card key={task.id}>
+              <Card key={task.id} className="text-black">
                 <CardHeader>
-                  <CardTitle className="text-lg">
+                  <CardTitle className="text-lg text-black">
                     {task.service ? task.service.serviceType : 'Service type not available'}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-2 text-black">
                   <div>
-                    <p className="text-sm text-gray-500">Customer</p>
-                    <p className="font-medium">{task.customerName}</p>
-                    <p className="text-sm">
+                    <p className="text-sm text-black">Customer</p>
+                    <p className="font-medium text-black">{task.customerName}</p>
+                    <p className="text-sm text-black">
                       {task.customer?.email || 'Email not available'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Scheduled Date</p>
-                    <p className="font-medium">
+                    <p className="text-sm text-black">Scheduled Date</p>
+                    <p className="font-medium text-black">
                       {new Date(task.scheduledAt).toLocaleDateString()}
                     </p>
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={() => handleStartTask(task.id)} disabled={updating}>
+                  <Button onClick={() => handleStartTask(task.id)} disabled={updating} className="bg-gradient-to-r from-cyan-400 to-blue-400 text-black shadow border-0">
                     {updating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                     Start Task
                   </Button>

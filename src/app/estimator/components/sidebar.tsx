@@ -3,21 +3,19 @@ import { UserButton } from '@clerk/nextjs';
 import React, { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { 
-  LayoutDashboard, Users, Settings, ChevronLeft, ChevronRight, Menu,
-  BarChart2, Bell, LifeBuoy, FileText, Building2, UserCog, UserPlus
+  Search, Home, LayoutDashboard, Folder, CheckSquare, BarChart2, 
+  Bell, Users, LifeBuoy, Settings, ChevronLeft, ChevronRight, Menu,
+  Calculator, DollarSign, FileText, TrendingUp
 } from 'lucide-react'
 
 const menuItems = [
   { label: 'Dashboard', icon: LayoutDashboard, color: '#4ECDC4' },
-  { label: 'Employees', icon: Users, color: '#45B7D1' },
-  { label: 'Register Employee', icon: UserPlus, color: '#FF6B6B' },
-  { label: 'CSO Management', icon: UserCog, color: '#96CEB4' },
-  { label: 'Service Management', icon: FileText, color: '#FFD93D' },
-  { label: 'Office Management', icon: Building2, color: '#6C5CE7' },
-  { label: 'Analytics', icon: BarChart2, color: '#FF8B94' },
+  { label: 'Connection Pricing', icon: DollarSign, color: '#45B7D1' },
+  { label: 'Meter Pricing', icon: Calculator, color: '#96CEB4' },
+  { label: 'Reports', icon: FileText, color: '#FFD93D' },
+  { label: 'Analytics', icon: TrendingUp, color: '#6C5CE7' },
   { label: 'Notifications', icon: Bell, color: '#FF9F1C' },
-  { label: 'Support', icon: LifeBuoy, color: '#00B4D8' },
-  { label: 'Settings', icon: Settings, color: '#7209B7' }
+
 ]
 
 interface SidebarProps {
@@ -26,8 +24,9 @@ interface SidebarProps {
 
 const Sidebar = ({ onPageChange }: SidebarProps) => {
   const [activeItem, setActiveItem] = useState<string>('Dashboard')
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(true) // Default to open
   const [isMobile, setIsMobile] = useState(false)
+  const [location, setLocation] = useState<{ subCity: string; woreda: string } | null>(null)
   const { user } = useUser()
 
   // Handle window resize
@@ -35,6 +34,7 @@ const Sidebar = ({ onPageChange }: SidebarProps) => {
     const checkMobile = () => {
       const isMobileView = window.innerWidth < 768
       setIsMobile(isMobileView)
+      // Always keep sidebar open on desktop
       if (!isMobileView) {
         setIsOpen(true)
       }
@@ -45,7 +45,26 @@ const Sidebar = ({ onPageChange }: SidebarProps) => {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // Fetch employee location
+  useEffect(() => {
+    const fetchLocation = async () => {
+      if (!user?.id) return
+
+      try {
+        const response = await fetch(`/api/employee-info?userId=${user.id}`)
+        if (!response.ok) throw new Error('Failed to fetch location')
+        const data = await response.json()
+        setLocation(data)
+      } catch (error) {
+        console.error('Error fetching location:', error)
+      }
+    }
+
+    fetchLocation()
+  }, [user?.id])
+
   const toggleSidebar = () => {
+    // Only allow toggling on mobile
     if (isMobile) {
       setIsOpen(!isOpen)
     }
@@ -102,7 +121,12 @@ const Sidebar = ({ onPageChange }: SidebarProps) => {
             </div>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <h1 className="text-2xl font-bold text-white">Manager</h1>
+            <h1 className="text-2xl font-bold text-white">Estimator</h1>
+            {location && (
+              <p className="text-sm text-white/80">
+                {location.subCity}, Woreda {location.woreda}
+              </p>
+            )}
           </div>
         </div>
         
@@ -128,4 +152,4 @@ const Sidebar = ({ onPageChange }: SidebarProps) => {
   )
 }
 
-export default Sidebar
+export default Sidebar 

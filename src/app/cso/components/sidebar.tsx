@@ -102,10 +102,10 @@ const Sidebar = ({ onPageChange }: SidebarProps) => {
       {/* Sidebar */}
       <div className={`fixed top-0 left-0 h-screen bg-[#1A4150] border-r border-gray-200 flex flex-col z-40 transition-all duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
-        ${isMobile ? 'w-72' : 'w-72'}`}>
+        ${isMobile ? 'w-72' : 'w-72'} rounded-r-[60px]`}>
         
         {/* Header */}
-        <div className="p-6 bg-[#357C8F] shadow-sm relative">
+        <div className="p-6 bg-[#1A4150] shadow-sm relative">
           {/* Only show toggle button on mobile */}
           {isMobile && (
             <button
@@ -116,18 +116,10 @@ const Sidebar = ({ onPageChange }: SidebarProps) => {
             </button>
           )}
           
-          <div className="flex justify-center items-center mb-8">
+          <div className="flex justify-center items-center mb-8 mt-6">
             <div className="transform scale-[2.5]"> 
               <UserButton 
                 afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    avatarBox: "w-[35px] h-[35px] border-2 border-white rounded-full",
-                    userButtonPopoverCard: "bg-[#1A4150] border border-[#357C8F]",
-                    userButtonPopoverActionButton: "text-white hover:bg-[#357C8F]",
-                    userButtonPopoverFooter: "border-t border-[#357C8F]"
-                  }
-                }}
               />
             </div>
           </div>
@@ -149,12 +141,9 @@ const Sidebar = ({ onPageChange }: SidebarProps) => {
                 <button
                   onClick={() => handleItemClick(label)}
                   className={`group flex items-center gap-3 px-4 py-3 w-full rounded-lg transition-all duration-150
-                    ${activeItem === label 
-                      ? 'bg-[#357C8F] text-white font-semibold' 
-                      : 'text-white/80 hover:bg-[#357C8F] hover:text-white'
-                    }`}
+                    text-white ${activeItem === label ? 'font-semibold border-l-4 border-[#4ECDC4] bg-[#285366]' : 'font-normal border-l-4 border-transparent'} hover:bg-[#285366] active:bg-[#285366]`}
                 >
-                  <Icon className={`w-5 h-5 transition-colors ${activeItem === label ? 'text-white' : 'text-white/80'}`} />
+                  <Icon className={`w-5 h-5 text-white`} />
                   <span className="text-sm">{label}</span>
                 </button>
               </li>

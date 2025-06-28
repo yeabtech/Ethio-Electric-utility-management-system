@@ -68,7 +68,7 @@ export default function HomePage({ verification, loading }: HomePageProps) {
         {/* Welcome Section - Shown to all users */}
         <div className="bg-card p-6 rounded-lg border border-border shadow-sm">
           <h1 className="text-2xl font-bold text-foreground mb-2 text-center">Welcome to EEUMS Dashboard</h1>
-          <p className="text-muted-foreground mb-4 text-center">Your one-stop platform for all your electricity utility management needs.</p>
+
           
           {!isVerified && (
             <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -136,56 +136,9 @@ export default function HomePage({ verification, loading }: HomePageProps) {
           )}
         </div>
 
-        {/* Quick Links - Shown to all users */}
-        <div className="bg-card p-6 rounded-lg border border-border shadow-sm">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Quick Links</h2>
-          <div className="flex flex-wrap gap-3">
-            <Button 
-              variant="outline" 
-              className="bg-card hover:bg-accent text-card-foreground border-border" 
-              onClick={() => router.push('/customer/help')}
-            >
-              Help & Support
-            </Button>
-            <Button 
-              variant="outline" 
-              className="bg-card hover:bg-accent text-card-foreground border-border" 
-              onClick={() => router.push('/customer/faq')}
-            >
-              FAQ
-            </Button>
-          </div>
-        </div>
+        
 
-        {/* Actions for verified users only */}
-        {isVerified && (
-          <div className="bg-card p-6 rounded-lg border border-border shadow-sm">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
-            <div className="flex flex-wrap gap-3">
-              <Button 
-                variant="outline" 
-                className="bg-card hover:bg-accent text-card-foreground border-border" 
-                onClick={() => router.push('/customer/services/power-outage')}
-              >
-                Report Power Outage
-              </Button>
-              <Button 
-                variant="outline" 
-                className="bg-card hover:bg-accent text-card-foreground border-border" 
-                onClick={() => router.push('/customer/services/bill-dispute')}
-              >
-                Dispute a Bill
-              </Button>
-              <Button 
-                variant="outline" 
-                className="bg-card hover:bg-accent text-card-foreground border-border" 
-                onClick={() => router.push('/customer/services/meter-reading')}
-              >
-                Request Meter Reading
-              </Button>
-            </div>
-          </div>
-        )}
+        
       </main>
     </div>
   )
