@@ -38,7 +38,12 @@ export async function GET(request: Request) {
         task: {
           select: {
             status: true,
-            report: true,
+            report: {
+              select: {
+                status: true,
+                priority: true,
+              },
+            },
           },
         },
       },
@@ -47,7 +52,30 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.json(applications);
+    // Manually map to ensure only the expected fields are sent
+    const safeApplications = applications.map(app => ({
+      ...app,
+      task: app.task
+        ? {
+            status: app.task.status,
+            report: app.task.report
+              ? {
+                  status: app.task.report.status,
+                  priority: app.task.report.priority,
+                }
+              : null,
+          }
+        : null,
+      receipt: app.receipt
+        ? {
+            status: app.receipt.status,
+            paid: app.receipt.paid,
+            paymentDate: app.receipt.paymentDate,
+          }
+        : null,
+    }));
+
+    return NextResponse.json(safeApplications);
   } catch (error) {
     console.error("[CUSTOMER_APPLICATIONS_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });

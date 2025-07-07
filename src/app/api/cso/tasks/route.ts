@@ -74,3 +74,89 @@ export async function POST(request: Request) {
     )
   }
 }
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const subCity = searchParams.get('subCity')
+  const woreda = searchParams.get('woreda')
+
+  if (!subCity || !woreda) {
+    return NextResponse.json(
+      { error: 'Location parameters are required' },
+      { status: 400 }
+    )
+  }
+
+  try {
+    // Find all tasks for the given subCity and woreda
+    const tasks = await prisma.task.findMany({
+      where: {
+        technician: {
+          subCity,
+          woreda
+        }
+      },
+      include: {
+        technician: {
+          include: {
+            user: {
+              select: {
+                email: true,
+                verification: {
+                  select: {
+                    firstName: true,
+                    lastName: true
+                  },
+                  orderBy: { createdAt: 'desc' },
+                  take: 1
+                }
+              }
+            }
+          }
+        },
+        customer: {
+          select: {
+            email: true,
+            verification: {
+              select: {
+                firstName: true,
+                lastName: true,
+                subCity: true,
+                woreda: true
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 1
+            }
+          }
+        },
+        service: true,
+        receipt: true
+      },
+      orderBy: { scheduledAt: 'desc' }
+    })
+
+    // Flatten verification arrays for technician and customer
+    const result = tasks.map(task => ({
+      ...task,
+      technician: task.technician ? {
+        ...task.technician,
+        user: {
+          ...task.technician.user,
+          verification: task.technician.user.verification[0] || null
+        }
+      } : null,
+      customer: task.customer ? {
+        ...task.customer,
+        verification: task.customer.verification[0] || null
+      } : null
+    }))
+
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error('Failed to fetch tasks:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch tasks' },
+      { status: 500 }
+    )
+  }
+}

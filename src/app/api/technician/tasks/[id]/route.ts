@@ -55,7 +55,16 @@ export async function GET(request: NextRequest) {
               }
             }
           },
-          receipt: { select: { grandTotal: true } }
+          receipt: { select: { grandTotal: true } },
+          report: {
+            select: {
+              id: true,
+              status: true,
+              template: { select: { title: true, fields: true } },
+              data: true,
+              attachments: true
+            }
+          }
         },
         orderBy: { scheduledAt: 'asc' }
       })

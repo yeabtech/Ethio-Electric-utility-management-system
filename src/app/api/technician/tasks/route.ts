@@ -2,30 +2,35 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { NextRequest } from 'next/server'
+import { clerkClient } from '@clerk/clerk-sdk-node'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
+    const clerkUserId = searchParams.get('clerkUserId')
 
-    if (!userId) {
-        return NextResponse.json(
-            { error: 'Missing userId parameter' },
-            { status: 400 }
-        )
+    if (!clerkUserId) {
+        return NextResponse.json({ error: 'Missing clerk user ID' }, { status: 400 })
     }
 
     try {
-        // Look for technician with the provided userId
-        const technician = await prisma.technician.findUnique({
-            where: { userId }, // Look for technician using the userId from Clerk
-            select: { id: true }
+        // Find the user associated with the clerkUserId
+        const user = await prisma.user.findUnique({
+            where: { clerkUserId: clerkUserId },
+            select: { id: true }  // Get the User ID
         })
+        
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 })
+        }
 
+        // Fetch the technician by the user ID
+        const technician = await prisma.technician.findUnique({
+            where: { userId: user.id }, // Lookup the technician by the associated user
+            select: { id: true } // Ensure we have technician's ID for the task lookup
+        })
+        
         if (!technician) {
-            return NextResponse.json(
-                { error: 'Technician not found' },
-                { status: 404 }
-            )
+            return NextResponse.json({ error: 'Technician not found' }, { status: 404 })
         }
 
         // Fetch the tasks assigned to the technician
@@ -58,12 +63,44 @@ export async function GET(request: NextRequest) {
                     select: {
                         grandTotal: true
                     }
+                },
+                report: {
+                    include: {
+                        data: true,
+                        attachments: true,
+                        template: true
+                    }
+                },
+                assignedBy: {
+                    select: {
+                        email: true,
+                        clerkUserId: true
+                    }
                 }
             },
-            orderBy: { scheduledAt: 'asc' }
+            orderBy: { scheduledAt: 'desc' },
+            take: 10
         })
 
-        return NextResponse.json(tasks)
+        // Fetch Clerk names for assignedBy
+        const tasksWithNames = await Promise.all(tasks.map(async (task) => {
+            let assignedByFirstName = '';
+            let assignedByLastName = '';
+            if (task.assignedBy?.clerkUserId) {
+                try {
+                    const clerkUser = await clerkClient.users.getUser(task.assignedBy.clerkUserId);
+                    assignedByFirstName = clerkUser.firstName || '';
+                    assignedByLastName = clerkUser.lastName || '';
+                } catch (e) {}
+            }
+            return {
+                ...task,
+                assignedByFirstName,
+                assignedByLastName
+            };
+        }));
+
+        return NextResponse.json(tasksWithNames)
     } catch (error) {
         return NextResponse.json(
             { error: 'Failed to fetch tasks' },

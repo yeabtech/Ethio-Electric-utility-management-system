@@ -46,6 +46,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/tawk/chat/(.*)",
   "/api/estimator/statistics",
   "/api/estimator/statistics/(.*)",
+  "/api/report/templates",
 
   
   

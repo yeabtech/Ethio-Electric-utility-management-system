@@ -120,7 +120,7 @@ export default function NewsPage() {
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 bg-white">
       <h1 className="text-2xl font-bold mb-6 text-black">News Management</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

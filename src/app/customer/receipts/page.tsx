@@ -92,18 +92,18 @@ export default function ReceiptPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-foreground">Your Receipts</h1>
+    <div className="p-6 max-w-4xl mx-auto text-black dark:text-black">
+      <h1 className="text-2xl font-bold mb-6 text-black dark:text-white">Your Receipts</h1>
       {receipts.length === 0 ? (
-        <p className="text-foreground">No receipts found.</p>
+        <p className="text-black dark:text-black">No receipts found.</p>
       ) : (
         <div className="space-y-4">
           {receipts.map((receipt) => (
             <Card key={receipt.id}>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-foreground">{receipt.service.serviceType.replace(/_/g, ' ')}</CardTitle>
-                  <p className="text-sm text-muted-foreground">
+                  <CardTitle className="text-black dark:text-black">{receipt.service.serviceType.replace(/_/g, ' ')}</CardTitle>
+                  <p className="text-sm text-black dark:text-black">
                     {receipt.connectionType} – {receipt.voltageLevel}
                   </p>
                 </div>
@@ -118,7 +118,7 @@ export default function ReceiptPage() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="text-sm text-foreground">
+              <CardContent className="text-sm text-black dark:text-black">
                 <p><strong>Total:</strong> ETB {receipt.grandTotal.toFixed(2)}</p>
                 <p><strong>Date:</strong> {new Date(receipt.createdAt).toLocaleDateString()}</p>
                 {receipt.paymentDate && (

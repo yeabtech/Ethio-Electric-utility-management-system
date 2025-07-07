@@ -29,6 +29,7 @@ export default function HomePage({ verification, loading }: HomePageProps) {
   const { theme } = useTheme()
   const [news, setNews] = useState<NewsArticle[]>([])
   const [loadingNews, setLoadingNews] = useState(true)
+  const [expandedNews, setExpandedNews] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -48,6 +49,10 @@ export default function HomePage({ verification, loading }: HomePageProps) {
 
     fetchNews()
   }, [])
+
+  const toggleExpand = (id: string) => {
+    setExpandedNews(expandedNews === id ? null : id)
+  }
 
   if (loading) {
     return (
@@ -103,33 +108,57 @@ export default function HomePage({ verification, loading }: HomePageProps) {
             </div>
           ) : news.length > 0 ? (
             <div className="grid gap-4">
-              {news.map((article) => (
-                <Card key={article.id} className="overflow-hidden">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-bold text-foreground">
-                      {article.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {article.imageUrl && (
-                      <div className="mb-4">
-                        <img
-                          src={article.imageUrl}
-                          alt={article.title}
-                          className="w-full h-48 object-cover rounded-lg"
-                        />
-                      </div>
-                    )}
-                    <div
-                      className="prose max-w-none text-foreground text-sm"
-                      dangerouslySetInnerHTML={{ __html: article.content }}
-                    />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Published on: {new Date(article.createdAt).toLocaleDateString()}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+              {news.map((article) => {
+                const isExpanded = expandedNews === article.id
+                return (
+                  <Card key={article.id} className="overflow-hidden">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg font-bold text-foreground  dark:text-black">
+                        {article.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {article.imageUrl && (
+                        <div className="mb-4">
+                          <img
+                            src={article.imageUrl}
+                            alt={article.title}
+                            className="w-full h-48 object-cover rounded-lg"
+                          />
+                        </div>
+                      )}
+                      {isExpanded ? (
+                        <>
+                          <div
+                            className="prose max-w-none text-foreground text-sm dark:text-black"
+                            dangerouslySetInnerHTML={{
+                              __html: article.content,
+                            }}
+                          />
+                          <button
+                            className="mt-2 text-blue-600 dark:text-blue-400 underline"
+                            onClick={() => toggleExpand(article.id)}
+                          >
+                            Show less
+                          </button>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Published on: {new Date(article.createdAt).toLocaleDateString()}
+                          </p>
+                        </>
+                      ) : (
+                        article.content.length > 0 && (
+                          <button
+                            className="mt-2 text-blue-600 dark:text-blue-400 underline"
+                            onClick={() => toggleExpand(article.id)}
+                          >
+                            Show more
+                          </button>
+                        )
+                      )}
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           ) : (
             <p className="text-muted-foreground text-center py-4">No news articles available at the moment.</p>

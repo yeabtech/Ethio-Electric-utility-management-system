@@ -44,14 +44,37 @@ export default function CustomerOperatorPage() {
     }
   };
 
+  // Helper to check if the current page should be wrapped (iframe-like pages)
+  const isIframePage = [
+    'Users',
+    'verfiy users',
+    'services',
+    'Tasks assign',
+    'Support',
+  ].includes(activePage);
+
   return (
     <div className="min-h-screen flex bg-[#E6E6E6]">
       {/* Sidebar */}
       <Sidebar onPageChange={setActivePage} />
       
       {/* Main Content - Add margin-left to account for sidebar width */}
-      <div className="flex-1 p-12 ml-72">
-        {renderContent()}
+      <div
+        className="flex-1 p-12 ml-72 text-black"
+        style={{
+          backgroundImage: 'url(/bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        {isIframePage ? (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 md:p-8 w-full h-full min-h-[600px] text-black">
+            {renderContent()}
+          </div>
+        ) : (
+          renderContent()
+        )}
       </div>
     </div>
   );

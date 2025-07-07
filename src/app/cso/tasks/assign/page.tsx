@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import "@/app/globals.css"
+import { Card, CardContent } from '@/components/ui/card'
 
 type ApproveService = {
   id: string
@@ -46,6 +47,7 @@ type Technician = {
 
 export default function AssignTasksPage() {
   const { user } = useUser()
+  const router = useRouter()
   const [services, setServices] = useState<ApproveService[]>([])
   const [technicians, setTechnicians] = useState<Technician[]>([])
   const [selectedTechnicians, setSelectedTechnicians] = useState<{ [serviceId: string]: string }>({})
@@ -53,6 +55,8 @@ export default function AssignTasksPage() {
   const [loading, setLoading] = useState(true)
   const [assigning, setAssigning] = useState(false)
   const [error, setError] = useState('')
+  const [canceledTasks, setCanceledTasks] = useState<any[]>([])
+  const [loadingCanceled, setLoadingCanceled] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,10 +79,17 @@ export default function AssignTasksPage() {
         console.log('Technician API response:', techData)
         setTechnicians(techData)
 
+        // Fetch all tasks for this subcity/woreda and filter for cancelled
+        setLoadingCanceled(true)
+        const allTasksRes = await fetch(`/api/cso/tasks?subCity=${csoData.subCity}&woreda=${csoData.woreda}`)
+        const allTasksData = await allTasksRes.json()
+        const cancelled = (allTasksData || []).filter((task: any) => task.status === 'cancelled')
+        setCanceledTasks(cancelled)
       } catch (err) {
         setError("An error occurred while fetching data.")
       } finally {
         setLoading(false)
+        setLoadingCanceled(false)
       }
     }
 
@@ -123,6 +134,7 @@ export default function AssignTasksPage() {
         return copy
       })
       setError('')
+      router.refresh()
     } catch (err) {
       setError("An error occurred while assigning the task.")
     } finally {
@@ -224,6 +236,41 @@ export default function AssignTasksPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
+      {/* Canceled Tasks List */}
+      <div>
+        <h2 className="text-xl font-bold mb-2">Canceled Tasks List</h2>
+        {loadingCanceled ? (
+          <div className="flex justify-center p-4"><Loader2 /></div>
+        ) : canceledTasks.length === 0 ? (
+          <div className="text-gray-500 p-2">No canceled tasks found.</div>
+        ) : (
+          <div className="space-y-2 mb-6">
+            {canceledTasks.map((task, idx) => (
+              <Card key={task.id || idx} className="bg-red-50 border-red-200">
+                <CardContent className="py-3 px-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                  <div>
+                    <div className="font-semibold text-red-700">{task.serviceType || task.service?.serviceType || 'Service'}</div>
+                    <div className="text-sm text-gray-700">
+                      Customer: {task.customer?.verification?.[0]?.firstName ? `${task.customer.verification[0].firstName} ${task.customer.verification[0].lastName}` : 'Unknown'}
+                    </div>
+                    <div className="text-sm text-gray-700">
+                      Scheduled: {task.scheduledAt ? new Date(task.scheduledAt).toLocaleDateString() : 'N/A'}
+                    </div>
+                    <div className="text-sm text-gray-700">
+                      Technician: {task.technician?.user?.verification?.[0]?.firstName ? `${task.technician.user.verification[0].firstName} ${task.technician.user.verification[0].lastName}` : (task.technician?.user?.email || 'Unknown')}
+                    </div>
+                    {task.rejectionReason && (
+                      <div className="text-sm text-gray-700">Reason: {task.rejectionReason}</div>
+                    )}
+                  </div>
+                  <div className="text-xs text-red-600 font-bold">CANCELED</div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+      {/* Main Assign Table */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Assign Technician Tasks</h1>
         <div className="text-sm text-gray-500">

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { 
   LayoutDashboard, Users, Settings, ChevronLeft, ChevronRight, Menu,
-  BarChart2, Bell, LifeBuoy, FileText, Building2, UserCog, UserPlus
+  BarChart2, Bell, LifeBuoy, FileText, Building2, UserCog, UserPlus, Newspaper
 } from 'lucide-react'
 
 const menuItems = [
@@ -14,6 +14,7 @@ const menuItems = [
   { label: 'CSO Management', icon: UserCog, color: '#96CEB4' },
   { label: 'Service Management', icon: FileText, color: '#FFD93D' },
   { label: 'Office Management', icon: Building2, color: '#6C5CE7' },
+  { label: 'News', icon: Newspaper, color: '#FF8B94' },
   { label: 'Analytics', icon: BarChart2, color: '#FF8B94' },
   { label: 'Notifications', icon: Bell, color: '#FF9F1C' },
   { label: 'Support', icon: LifeBuoy, color: '#00B4D8' },

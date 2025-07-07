@@ -184,11 +184,11 @@ export default function NewConnectionPage() {
     <Card className="mt-6 max-w-3xl mx-auto">
       <CardHeader className="border-b">
         <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center gap-2">
-            <ReceiptIcon className="w-6 h-6 text-primary" />
+          <CardTitle className="flex items-center gap-2 text-black dark:text-black">
+            <ReceiptIcon className="w-6 h-6 text-black dark:text-black" />
             <span>New Connection Application Receipt</span>
           </CardTitle>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-black dark:text-black">
             Date: {new Date().toLocaleDateString()}
           </div>
         </div>
@@ -197,59 +197,59 @@ export default function NewConnectionPage() {
         <div className="space-y-6">
           {/* Application Details */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Application Details</h3>
+            <h3 className="font-semibold text-lg text-black dark:text-black">Application Details</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Connection Type</p>
-                <p className="font-medium">{receipt?.connectionType}</p>
+                <p className="text-sm text-black dark:text-black">Connection Type</p>
+                <p className="font-medium text-black dark:text-black">{receipt?.connectionType}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Voltage Level</p>
-                <p className="font-medium">{receipt?.voltageLevel}</p>
+                <p className="text-sm text-black dark:text-black">Voltage Level</p>
+                <p className="font-medium text-black dark:text-black">{receipt?.voltageLevel}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Plot/Land Number</p>
-                <p className="font-medium">{formData.plotNumber}</p>
+                <p className="text-sm text-black dark:text-black">Plot/Land Number</p>
+                <p className="font-medium text-black dark:text-black">{formData.plotNumber}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Estimated Load</p>
-                <p className="font-medium">{formData.estimatedLoad} kW</p>
+                <p className="text-sm text-black dark:text-black">Estimated Load</p>
+                <p className="font-medium text-black dark:text-black">{formData.estimatedLoad} kW</p>
               </div>
             </div>
           </div>
 
           {/* Cost Breakdown */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Cost Breakdown</h3>
+            <h3 className="font-semibold text-lg text-black dark:text-black">Cost Breakdown</h3>
             <div className="border rounded-lg p-4 space-y-3">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Base Cost:</span>
-                <span className="font-medium">{receipt?.baseCost.toLocaleString()} ETB</span>
+                <span className="text-black dark:text-black">Base Cost:</span>
+                <span className="font-medium text-black dark:text-black">{receipt?.baseCost.toLocaleString()} ETB</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Voltage Rate:</span>
-                <span className="font-medium">{receipt?.voltageRate.toLocaleString()} ETB</span>
+                <span className="text-black dark:text-black">Voltage Rate:</span>
+                <span className="font-medium text-black dark:text-black">{receipt?.voltageRate.toLocaleString()} ETB</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Tax (15%):</span>
-                <span className="font-medium">{receipt?.tax.toLocaleString()} ETB</span>
+                <span className="text-black dark:text-black">Tax (15%):</span>
+                <span className="font-medium text-black dark:text-black">{receipt?.tax.toLocaleString()} ETB</span>
               </div>
               <div className="flex justify-between font-bold border-t pt-3">
-                <span>Total Amount:</span>
-                <span className="text-primary">{receipt?.total.toLocaleString()} ETB</span>
+                <span className="text-black dark:text-black">Total Amount:</span>
+                <span className="text-black dark:text-black">{receipt?.total.toLocaleString()} ETB</span>
               </div>
             </div>
           </div>
 
           {/* Submitted Documents */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Submitted Documents</h3>
+            <h3 className="font-semibold text-lg text-black dark:text-black">Submitted Documents</h3>
             <div className="border rounded-lg p-4">
               <ul className="space-y-2">
                 {receipt?.documents.map((doc, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-green-500" />
-                    <span className="text-sm">{doc}</span>
+                    <span className="text-sm text-black dark:text-black">{doc}</span>
                   </li>
                 ))}
               </ul>
@@ -258,8 +258,8 @@ export default function NewConnectionPage() {
 
           {/* Important Notes */}
           <div className="bg-muted/50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Important Notes</h3>
-            <ul className="text-sm space-y-2 text-muted-foreground">
+            <h3 className="font-semibold mb-2 text-black dark:text-black">Important Notes</h3>
+            <ul className="text-sm space-y-2 text-black dark:text-black">
               <li>• Please keep this receipt for your records</li>
               <li>• Your application will be processed within 5-7 business days</li>
               <li>• You will be notified via email about the status of your application</li>
@@ -303,7 +303,7 @@ export default function NewConnectionPage() {
   }
 
   return (
-    <div className="p-4 space-y-6 text-black dark:text-white bg-gray-100 dark:bg-transparent">
+    <div className="p-4 space-y-6 text-black dark:text-black bg-gray-100 dark:bg-transparent">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold text-black dark:text-white">New Electricity Connection</h1>
         <p className="text-black/70 dark:text-white/70">Apply for a new electricity connection to your property</p>
@@ -311,15 +311,15 @@ export default function NewConnectionPage() {
 
       {error && (
         <Alert variant="warning">
-          <XCircle className="h-5 w-5" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <XCircle className="h-5 w-5 text-black dark:text-black" />
+          <AlertTitle><span className="text-black dark:text-black">Error</span></AlertTitle>
+          <AlertDescription><span className="text-black dark:text-black">{error}</span></AlertDescription>
         </Alert>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
-          <CardHeader><CardTitle>Connection Details</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-black dark:text-black">Connection Details</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="connectionType">Type of Connection *</Label>
@@ -351,22 +351,22 @@ export default function NewConnectionPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>Required Documents</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-black dark:text-black">Required Documents</CardTitle></CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label>Property Ownership Document *</Label>
               <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => e.target.files && handleFileUpload('propertyDoc', Array.from(e.target.files))} required />
-              {files.propertyDoc && <p className="text-sm text-green-600">{files.propertyDoc[0].name} selected</p>}
+              {files.propertyDoc && <p className="text-sm text-black dark:text-black">{files.propertyDoc[0].name} selected</p>}
             </div>
             <div className="space-y-2">
               <Label>Site Plan *</Label>
               <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => e.target.files && handleFileUpload('sitePlan', Array.from(e.target.files))} required />
-              {files.sitePlan && <p className="text-sm text-green-600">{files.sitePlan[0].name} selected</p>}
+              {files.sitePlan && <p className="text-sm text-black dark:text-black">{files.sitePlan[0].name} selected</p>}
             </div>
             <div className="space-y-2">
               <Label>ID Document (From Verification)</Label>
               <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => e.target.files && handleFileUpload('idDoc', Array.from(e.target.files))} />
-              {files.idDoc && <p className="text-sm text-green-600">{files.idDoc[0].name} selected</p>}
+              {files.idDoc && <p className="text-sm text-black dark:text-black">{files.idDoc[0].name} selected</p>}
             </div>
           </CardContent>
         </Card>
@@ -374,13 +374,13 @@ export default function NewConnectionPage() {
         {/* Cost estimate */}
         {estimatedCost && (
           <Card>
-            <CardHeader><CardTitle>Cost Estimate</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-black dark:text-black">Cost Estimate</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-4 gap-4">
-                <div className="space-y-1"><p className="text-sm text-muted-foreground">Base Cost</p><p className="font-medium">{estimatedCost.baseCost.toLocaleString()} ETB</p></div>
-                <div className="space-y-1"><p className="text-sm text-muted-foreground">Voltage Rate</p><p className="font-medium">{estimatedCost.voltageRate.toLocaleString()} ETB</p></div>
-                <div className="space-y-1"><p className="text-sm text-muted-foreground">Tax (15%)</p><p className="font-medium">{estimatedCost.tax.toLocaleString()} ETB</p></div>
-                <div className="space-y-1"><p className="text-sm text-muted-foreground">Total</p><p className="font-bold">{estimatedCost.total.toLocaleString()} ETB</p></div>
+                <div className="space-y-1"><p className="text-sm text-black dark:text-black">Base Cost</p><p className="font-medium text-black dark:text-black">{estimatedCost.baseCost.toLocaleString()} ETB</p></div>
+                <div className="space-y-1"><p className="text-sm text-black dark:text-black">Voltage Rate</p><p className="font-medium text-black dark:text-black">{estimatedCost.voltageRate.toLocaleString()} ETB</p></div>
+                <div className="space-y-1"><p className="text-sm text-black dark:text-black">Tax (15%)</p><p className="font-medium text-black dark:text-black">{estimatedCost.tax.toLocaleString()} ETB</p></div>
+                <div className="space-y-1"><p className="text-sm text-black dark:text-black">Total</p><p className="font-bold text-black dark:text-black">{estimatedCost.total.toLocaleString()} ETB</p></div>
               </div>
             </CardContent>
           </Card>

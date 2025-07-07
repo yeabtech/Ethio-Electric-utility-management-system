@@ -179,7 +179,7 @@ export default function RepairsPage() {
                   onChange={handleInputChange}
                   placeholder="Enter your meter number"
                   required
-                  className={`mt-1 md:mt-2 md:text-lg md:p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300 text-black'}`}
+                  className="mt-1 md:mt-2 md:text-lg md:p-6 bg-white border-gray-300 text-black dark:bg-white dark:border-gray-300 dark:text-black"
                 />
               </div>
               <div>
@@ -192,7 +192,7 @@ export default function RepairsPage() {
                   placeholder="Describe the meter issue in detail"
                   rows={4}
                   required
-                  className={`mt-1 md:mt-2 md:text-lg md:p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300 text-black'}`}
+                  className="mt-1 md:mt-2 md:text-lg md:p-6 bg-white border-gray-300 text-black dark:bg-white dark:border-gray-300 dark:text-black"
                 />
               </div>
             </div>
@@ -212,7 +212,7 @@ export default function RepairsPage() {
                   onChange={handleInputChange}
                   placeholder="Enter your meter number"
                   required
-                  className={`mt-1 md:mt-2 md:text-lg md:p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300 text-black'}`}
+                  className="mt-1 md:mt-2 md:text-lg md:p-6 bg-white border-gray-300 text-black dark:bg-white dark:border-gray-300 dark:text-black"
                 />
               </div>
               <div>
@@ -221,10 +221,10 @@ export default function RepairsPage() {
                   value={formData.newMeterType}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, newMeterType: value }))}
                 >
-                  <SelectTrigger className={`mt-1 md:mt-2 md:text-lg md:p-6 ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300 text-black'}`}>
+                  <SelectTrigger className="mt-1 md:mt-2 md:text-lg md:p-6 bg-white border-gray-300 text-black dark:bg-white dark:border-gray-300 dark:text-black">
                     <SelectValue placeholder="Select meter type" />
                   </SelectTrigger>
-                  <SelectContent className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}>
+                  <SelectContent className="bg-white border-gray-200 dark:bg-white dark:border-gray-200">
                     {meterPricing.map((type) => (
                       <SelectItem key={type.id} value={type.meterType}>
                         {type.meterType} - ETB {type.price}
@@ -296,7 +296,7 @@ export default function RepairsPage() {
                   onChange={handleInputChange}
                   placeholder="Enter your meter number"
                   required
-                  className={`mt-1 md:mt-2 md:text-lg md:p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300 text-black'}`}
+                  className="mt-1 md:mt-2 md:text-lg md:p-6 bg-white border-gray-300 text-black dark:bg-white dark:border-gray-300 dark:text-black"
                 />
               </div>
               <div>
@@ -307,7 +307,7 @@ export default function RepairsPage() {
                   onChange={(e) => handleFileUpload('billPhoto', e.target.files)}
                   accept="image/*"
                   required
-                  className={`mt-1 md:mt-2 md:text-lg ${theme === 'dark' ? 'text-gray-300 file:bg-gray-700 file:text-gray-300 file:border-gray-600' : 'text-black file:bg-gray-200 file:text-black file:border-gray-300'}`}
+                  className="mt-1 md:mt-2 md:text-lg bg-white text-black file:bg-white file:text-black file:border-gray-300 dark:bg-white dark:text-black dark:file:bg-white dark:file:text-black dark:file:border-gray-300"
                 />
               </div>
               <div>
@@ -320,7 +320,7 @@ export default function RepairsPage() {
                   placeholder="Describe your dispute in detail"
                   rows={4}
                   required
-                  className={`mt-1 md:mt-2 md:text-lg md:p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300 text-black'}`}
+                  className="mt-1 md:mt-2 md:text-lg md:p-6 bg-white border-gray-300 text-black dark:bg-white dark:border-gray-300 dark:text-black"
                 />
               </div>
             </div>
@@ -400,27 +400,27 @@ export default function RepairsPage() {
 
   return (
     <div className={`max-w-4xl sm:max-w-5xl md:max-w-6xl lg:max-w-7xl mx-auto p-8 ${theme === 'dark' ? 'text-gray-100' : 'text-black'}`}>
-      <Card className={`md:p-10 shadow-lg ${theme === 'dark' ? 'bg-gray-800/95 border-gray-700' : 'bg-white'}`}>
-        <CardHeader className={`border-b md:py-8 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-          <CardTitle className={`text-xl md:text-2xl font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-black'}`}>
+      <Card className={`md:p-10 shadow-lg bg-white dark:bg-white border-gray-200 dark:border-gray-200`}>
+        <CardHeader className={`border-b md:py-8 border-gray-200 dark:border-gray-200`}>
+          <CardTitle className="text-xl md:text-2xl font-semibold text-black dark:text-black">
             Repair Service Request
           </CardTitle>
         </CardHeader>
-        <CardContent className={`py-8 ${theme === 'dark' ? 'text-gray-300' : 'text-black'}`}>
+        <CardContent className="py-8 text-black dark:text-black">
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-6">
               <div>
-                <Label htmlFor="serviceType" className={`text-base md:text-lg font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-black'}`}>Service Type</Label>
+                <Label htmlFor="serviceType" className="text-base md:text-lg font-medium text-black dark:text-black">Service Type</Label>
                 <Select
                   value={serviceType}
                   onValueChange={(value) => setServiceType(value)}
                 >
-                  <SelectTrigger className={`mt-2 md:mt-3 md:text-lg md:p-6 ${theme === 'dark' ? 'bg-gray-700/50 border-gray-600' : 'bg-white border-gray-300 text-black'}`}>
+                  <SelectTrigger className="mt-2 md:mt-3 md:text-lg md:p-6 bg-white border-gray-300 text-black dark:bg-white dark:border-gray-200 dark:text-black">
                     <SelectValue placeholder="Select service type" />
                   </SelectTrigger>
-                  <SelectContent className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}>
+                  <SelectContent className="bg-white border-gray-200 dark:bg-white dark:border-gray-200">
                     {SERVICE_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
+                      <SelectItem key={type.value} value={type.value} className="text-black dark:text-black">
                         {type.label}
                       </SelectItem>
                     ))}
@@ -433,7 +433,7 @@ export default function RepairsPage() {
               <Button 
                 type="submit"
                 disabled={isSubmitting}
-                className={`md:text-lg md:px-10 md:py-6 rounded-lg ${theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'}`}
+                className="md:text-lg md:px-10 md:py-6 rounded-lg bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit'}
               </Button>

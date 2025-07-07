@@ -22,6 +22,13 @@ model User {
   receiptCustomers  Receipt[]              @relation("ReceiptCustomer")
   tasks             Task[]                 @relation("TaskCustomer")   // Added this
   assignedTasks     Task[]                 @relation("TaskAssigner")   // Added this
+  
+  // Report relations
+  reportTemplates   ReportTemplate[]       // Templates created by user
+  submittedReports  Report[]               @relation("SubmittedReports")
+  assignedReports   Report[]               @relation("AssignedReports")
+  reportComments    ReportComment[]
+  reportAccess      ReportAccess[]
 }
 
 model CustomerVerification {
@@ -161,7 +168,8 @@ model Task {
   scheduledAt  DateTime
   startedAt    DateTime?
   completedAt  DateTime?
-  report       String?
+  reportId     String?    @unique
+  report       Report?    @relation("TaskReport", fields: [reportId], references: [id])
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 }
@@ -232,4 +240,119 @@ model News {
   imageUrl  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ===== CORE REPORT TABLES =====
+model ReportTemplate {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  category    ReportCategory
+  fields      Json           // Schema for dynamic form fields
+  createdBy   String
+  creator     User           @relation(fields: [createdBy], references: [id])
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  reports     Report[]
+  accessRoles ReportAccess[] // Controls who can view/submit
+}
+
+model Report {
+  id           String         @id @default(cuid())
+  templateId   String
+  template     ReportTemplate @relation(fields: [templateId], references: [id])
+  submittedById String        // Original submitter
+  submittedBy  User           @relation("SubmittedReports", fields: [submittedById], references: [id])
+  assignedToId String?        // Primary reviewer (usually manager)
+  assignedTo   User?          @relation("AssignedReports", fields: [assignedToId], references: [id])
+  status       ReportStatus   @default(draft)
+  priority     ReportPriority @default(medium)
+  dueDate      DateTime?
+  submittedAt  DateTime?
+  completedAt  DateTime?
+  data         ReportData[]
+  comments     ReportComment[]
+  attachments  ReportAttachment[]
+  sharedWith   ReportAccess[] // Explicit CSO/manager access
+  task         Task?          @relation("TaskReport")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([submittedById, status])
+  @@index([assignedToId, status])
+}
+
+model ReportData {
+  id         String   @id @default(cuid())
+  reportId   String
+  report     Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  fieldName  String   // e.g. "progress_update"
+  fieldValue String   // Flexible data storage
+  createdAt  DateTime @default(now())
+}
+
+model ReportComment {
+  id        String   @id @default(cuid())
+  reportId  String
+  report    Report   @relation(fields: [reportId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model ReportAttachment {
+  id        String   @id @default(cuid())
+  reportId  String
+  report    Report   @relation(fields: [reportId], references: [id])
+  url       String   // Storage path
+  name      String
+  type      String   // e.g. "image/png"
+  size      Int      // Bytes
+  createdAt DateTime @default(now())
+}
+
+// ===== ACCESS CONTROL =====
+model ReportAccess {
+  id         String   @id @default(cuid())
+  reportId   String?
+  report     Report?  @relation(fields: [reportId], references: [id])
+  templateId String?
+  template   ReportTemplate? @relation(fields: [templateId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  role       String   // "viewer" | "editor" | "approver"
+  createdAt  DateTime @default(now())
+
+  @@unique([reportId, userId])
+  @@unique([templateId, userId])
+}
+
+// ===== ENUMS =====
+enum ReportStatus {
+  draft
+  submitted
+  in_review
+  approved
+  rejected
+  completed
+  archived
+}
+
+enum ReportPriority {
+  low
+  medium
+  high
+  critical
+}
+
+enum ReportCategory {
+  daily
+  project
+  technical
+  customer
+  financial
+  inventory
+  hr
+  other
 }
