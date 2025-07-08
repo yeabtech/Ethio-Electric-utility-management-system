@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             email: true,
+            clerkUserId: true,
             verification: {
                 select: {
                   firstName: true,

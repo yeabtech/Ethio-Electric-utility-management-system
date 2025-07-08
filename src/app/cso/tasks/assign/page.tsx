@@ -13,6 +13,7 @@ import { CalendarIcon, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import "@/app/globals.css"
 import { Card, CardContent } from '@/components/ui/card'
+import { useMemo, useRef } from 'react'
 
 type ApproveService = {
   id: string
@@ -41,6 +42,7 @@ type Technician = {
       firstName: string
       lastName: string
     }[]
+    clerkUserId?: string
   }
   status: 'available' | 'assigned' | 'on_leave'
 }
@@ -57,6 +59,14 @@ export default function AssignTasksPage() {
   const [error, setError] = useState('')
   const [canceledTasks, setCanceledTasks] = useState<any[]>([])
   const [loadingCanceled, setLoadingCanceled] = useState(true)
+  const [clerkNames, setClerkNames] = useState<{ [clerkUserId: string]: string }>({})
+  const [openReportTaskId, setOpenReportTaskId] = useState<string | null>(null)
+  const [reportData, setReportData] = useState<{ [taskId: string]: any }>({})
+  const [loadingReport, setLoadingReport] = useState<string | null>(null)
+  const [reportError, setReportError] = useState<string>('')
+  const [reassigningTaskId, setReassigningTaskId] = useState<string | null>(null)
+  const [reassignError, setReassignError] = useState<string>('')
+  const [selectedReassignTech, setSelectedReassignTech] = useState<{ [taskId: string]: string }>({})
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,6 +95,56 @@ export default function AssignTasksPage() {
         const allTasksData = await allTasksRes.json()
         const cancelled = (allTasksData || []).filter((task: any) => task.status === 'cancelled')
         setCanceledTasks(cancelled)
+
+        // Fetch Clerk names for all technicians, customers in canceled tasks
+        const fetchClerkNames = async () => {
+          const names: { [clerkUserId: string]: string } = {}
+          // Technicians in assign dropdown
+          await Promise.all(
+            techData.map(async (tech: Technician) => {
+              if (tech.user.clerkUserId) {
+                try {
+                  const res = await fetch(`/api/get-clerk-user?clerkUserId=${tech.user.clerkUserId}`)
+                  if (res.ok) {
+                    const data = await res.json()
+                    names[tech.user.clerkUserId] = `${data.firstName} ${data.lastName}`
+                  }
+                } catch {}
+              }
+            })
+          )
+          // Customers and technicians in canceled tasks
+          await Promise.all(
+            cancelled.flatMap((task: any) => [
+              (async () => {
+                const clerkUserId = task.customer?.clerkUserId
+                if (clerkUserId && !names[clerkUserId]) {
+                  try {
+                    const res = await fetch(`/api/get-clerk-user?clerkUserId=${clerkUserId}`)
+                    if (res.ok) {
+                      const data = await res.json()
+                      names[clerkUserId] = `${data.firstName} ${data.lastName}`
+                    }
+                  } catch {}
+                }
+              })(),
+              (async () => {
+                const clerkUserId = task.technician?.user?.clerkUserId
+                if (clerkUserId && !names[clerkUserId]) {
+                  try {
+                    const res = await fetch(`/api/get-clerk-user?clerkUserId=${clerkUserId}`)
+                    if (res.ok) {
+                      const data = await res.json()
+                      names[clerkUserId] = `${data.firstName} ${data.lastName}`
+                    }
+                  } catch {}
+                }
+              })()
+            ])
+          )
+          setClerkNames(names)
+        }
+        if (techData.length > 0 || cancelled.length > 0) fetchClerkNames()
       } catch (err) {
         setError("An error occurred while fetching data.")
       } finally {
@@ -142,6 +202,55 @@ export default function AssignTasksPage() {
     }
   }
 
+  const handleViewReport = async (taskId: string) => {
+    if (openReportTaskId === taskId) {
+      setOpenReportTaskId(null)
+      setReportError('')
+      return
+    }
+    setOpenReportTaskId(taskId)
+    setReportError('')
+    if (!reportData[taskId]) {
+      setLoadingReport(taskId)
+      try {
+        const res = await fetch(`/api/report/task/${taskId}`)
+        if (!res.ok) throw new Error(await res.text())
+        const data = await res.json()
+        setReportData(prev => ({ ...prev, [taskId]: data }))
+      } catch (err) {
+        setReportError('Failed to load report.')
+      } finally {
+        setLoadingReport(null)
+      }
+    }
+  }
+
+  const handleReassign = async (taskId: string) => {
+    const technicianId = selectedReassignTech[taskId]
+    if (!technicianId) {
+      setReassignError('Please select a technician to re-assign.')
+      return
+    }
+    setReassigningTaskId(taskId)
+    setReassignError('')
+    try {
+      const res = await fetch(`/api/cso/tasks/${taskId}/reassign`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ technicianId })
+      })
+      if (!res.ok) throw new Error(await res.text())
+      // Refresh canceled tasks list
+      setCanceledTasks(prev => prev.filter(t => t.id !== taskId))
+      setOpenReportTaskId(null)
+      setSelectedReassignTech(prev => { const copy = { ...prev }; delete copy[taskId]; return copy })
+    } catch (err) {
+      setReassignError('Failed to re-assign task.')
+    } finally {
+      setReassigningTaskId(null)
+    }
+  }
+
   const columns: ColumnDef<ApproveService>[] = [
     {
       accessorKey: 'serviceType',
@@ -192,9 +301,11 @@ export default function AssignTasksPage() {
               <SelectContent>
                 {technicians.map(tech => (
                   <SelectItem key={tech.id} value={tech.id}>
-                    {tech.user.verification?.[0]?.firstName && tech.user.verification?.[0]?.lastName
-                      ? `${tech.user.verification[0].firstName} ${tech.user.verification[0].lastName}`
-                      : tech.user.email ?? 'Unknown'}
+                    {tech.user.clerkUserId && clerkNames[tech.user.clerkUserId]
+                      ? clerkNames[tech.user.clerkUserId]
+                      : tech.user.verification?.[0]?.firstName && tech.user.verification?.[0]?.lastName
+                        ? `${tech.user.verification[0].firstName} ${tech.user.verification[0].lastName}`
+                        : tech.user.email ?? 'Unknown'}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -251,16 +362,85 @@ export default function AssignTasksPage() {
                   <div>
                     <div className="font-semibold text-red-700">{task.serviceType || task.service?.serviceType || 'Service'}</div>
                     <div className="text-sm text-gray-700">
-                      Customer: {task.customer?.verification?.[0]?.firstName ? `${task.customer.verification[0].firstName} ${task.customer.verification[0].lastName}` : 'Unknown'}
+                      Customer: {task.customer?.clerkUserId && clerkNames[task.customer.clerkUserId]
+                        ? clerkNames[task.customer.clerkUserId]
+                        : task.customer?.verification?.firstName && task.customer?.verification?.lastName
+                          ? `${task.customer.verification.firstName} ${task.customer.verification.lastName}`
+                          : task.customer?.email || 'Unknown'}
                     </div>
                     <div className="text-sm text-gray-700">
                       Scheduled: {task.scheduledAt ? new Date(task.scheduledAt).toLocaleDateString() : 'N/A'}
                     </div>
                     <div className="text-sm text-gray-700">
-                      Technician: {task.technician?.user?.verification?.[0]?.firstName ? `${task.technician.user.verification[0].firstName} ${task.technician.user.verification[0].lastName}` : (task.technician?.user?.email || 'Unknown')}
+                      Technician: {task.technician?.user?.clerkUserId && clerkNames[task.technician.user.clerkUserId]
+                        ? clerkNames[task.technician.user.clerkUserId]
+                        : task.technician?.user?.verification?.firstName && task.technician?.user?.verification?.lastName
+                          ? `${task.technician.user.verification.firstName} ${task.technician.user.verification.lastName}`
+                          : (task.technician?.user?.email || 'Unknown')}
                     </div>
                     {task.rejectionReason && (
                       <div className="text-sm text-gray-700">Reason: {task.rejectionReason}</div>
+                    )}
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => handleViewReport(task.id)}
+                    >
+                      {openReportTaskId === task.id ? 'Hide Report' : 'View Report'}
+                    </Button>
+                    {openReportTaskId === task.id && (
+                      <div className="mt-2">
+                        {loadingReport === task.id ? (
+                          <div className="flex items-center gap-2 text-gray-500"><Loader2 className="animate-spin h-4 w-4" /> Loading report...</div>
+                        ) : reportError ? (
+                          <div className="text-red-500">{reportError}</div>
+                        ) : reportData[task.id] ? (
+                          <Card className="bg-gray-50 border-gray-200">
+                            <CardContent className="py-3 px-4">
+                              <div className="font-bold mb-2">Report</div>
+                              <div className="text-sm text-gray-800">
+                                {Array.isArray(reportData[task.id].data) && reportData[task.id].data.length > 0
+                                  ? reportData[task.id].data[0].fieldValue
+                                  : <span className="text-gray-400">No report data found.</span>}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ) : null}
+                      </div>
+                    )}
+                    {/* Technician dropdown and Re-Assign button */}
+                    <div className="flex items-center gap-2 mt-2">
+                      <Select
+                        onValueChange={val => setSelectedReassignTech(prev => ({ ...prev, [task.id]: val }))}
+                        value={selectedReassignTech[task.id] || ''}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select technician" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {technicians.filter(t => t.status === 'available').map(tech => (
+                            <SelectItem key={tech.id} value={tech.id}>
+                              {tech.user.clerkUserId && clerkNames[tech.user.clerkUserId]
+                                ? clerkNames[tech.user.clerkUserId]
+                                : tech.user.verification?.[0]?.firstName && tech.user.verification?.[0]?.lastName
+                                  ? `${tech.user.verification[0].firstName} ${tech.user.verification[0].lastName}`
+                                  : tech.user.email ?? 'Unknown'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        disabled={!selectedReassignTech[task.id] || reassigningTaskId === task.id}
+                        onClick={() => handleReassign(task.id)}
+                      >
+                        {reassigningTaskId === task.id ? <Loader2 className="animate-spin h-4 w-4" /> : 'Re-Assign'}
+                      </Button>
+                    </div>
+                    {reassignError && (
+                      <div className="text-red-500 text-xs mt-1">{reassignError}</div>
                     )}
                   </div>
                   <div className="text-xs text-red-600 font-bold">CANCELED</div>

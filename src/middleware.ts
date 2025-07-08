@@ -23,7 +23,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/cso/verifications(.*)",
   "/api/cso/services/(.*)",
   "/api/cso/services",
-  "/api/cso/tasks",
+  "/api/cso/tasks/(.*)",
   "/api/cso/services/[id]/status",
   "/api/estimator/pricing",
   "/api/customer/receipts(.*)",
@@ -47,6 +47,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/estimator/statistics",
   "/api/estimator/statistics/(.*)",
   "/api/report/templates",
+  "/api/get-clerk-user"
 
   
   
