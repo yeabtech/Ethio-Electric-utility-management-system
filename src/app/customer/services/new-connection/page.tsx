@@ -12,6 +12,7 @@ import { Loader2, CheckCircle2, XCircle, Receipt as ReceiptIcon } from 'lucide-r
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useTheme } from '@/app/context/ThemeContext'
 import '@/app/globals.css'
+import { useLanguage } from '@/app/context/LanguageContext'
 
 const CONNECTION_TYPES = [
   'Residential',
@@ -29,11 +30,41 @@ const VOLTAGE_LEVELS = [
   '33 kV',
 ]
 
+// Translation object for new connection page
+const t = {
+  title: { en: 'New Electricity Connection', am: 'አዲስ የኤሌክትሪክ ግንኙነት' },
+  subtitle: { en: 'Apply for a new electricity connection to your property', am: 'ለአዲስ የኤሌክትሪክ ግንኙነት ያመልክቱ' },
+  pendingTitle: { en: 'Pending Application Exists', am: 'በመጠባበቅ ላይ ያለ ማመልከቻ አለ' },
+  pendingDesc: { en: 'You already have a pending new connection application. Please wait for it to be processed before submitting a new one.', am: 'አዲስ የኤሌክትሪክ ግንኙነት ማመልከቻ በመጠባበቅ ላይ አለ። እባክዎ እስከሚያስተናግዱት ድረስ ይጠብቁ።' },
+  error: { en: 'Error', am: 'ስህተት' },
+  connectionDetails: { en: 'Connection Details', am: 'የግንኙነት ዝርዝሮች' },
+  typeOfConnection: { en: 'Type of Connection *', am: 'የግንኙነት አይነት *' },
+  selectConnectionType: { en: 'Select connection type', am: 'የግንኙነት አይነት ይምረጡ' },
+  voltageLevel: { en: 'Voltage Level *', am: 'የቮልቴጅ ደረጃ *' },
+  selectVoltageLevel: { en: 'Select voltage level', am: 'የቮልቴጅ  ደረጃ ይምረጡ' },
+  plotNumber: { en: 'Plot/Land Number *', am: 'የመሬት ቁጥር *' },
+  estimatedLoad: { en: 'Estimated Load (kW)', am: 'ተገመተ ጭነት (ኪ.ዋ)' },
+  requiredDate: { en: 'Required Date', am: 'የሚያስፈልገው ቀን' },
+  requiredDocs: { en: 'Required Documents', am: 'የሚያስፈልጉ ሰነዶች' },
+  propertyDoc: { en: 'Property Ownership Document *', am: 'የንብረት መብት ሰነድ *' },
+  sitePlan: { en: 'Site Plan *', am: 'የሳይት እቅድ *' },
+  idDoc: { en: 'ID Document (From Verification)', am: 'መታወቂያ ሰነድ (ከማረጋገጫ)' },
+  costEstimate: { en: 'Cost Estimate', am: 'የወጪ ግምት' },
+  baseCost: { en: 'Base Cost', am: 'መሠረታዊ ወጪ' },
+  voltageRate: { en: 'Voltage Rate', am: 'የቃውም ክፍያ' },
+  tax: { en: 'Tax (15%)', am: 'ታክስ (15%)' },
+  total: { en: 'Total', am: 'ድምር' },
+  cancel: { en: 'Cancel', am: 'ይቅር' },
+  submit: { en: 'Submit Application', am: 'ማመልከቻ ያስገቡ' },
+  submitting: { en: 'Submitting...', am: 'በማስገባት ላይ...' },
+}
+
 export default function NewConnectionPage() {
   const { user } = useUser()
   const router = useRouter()
   const { startUpload } = useUploadThing('serviceDocuments')
   const { theme } = useTheme()
+  const { language } = useLanguage()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -284,9 +315,9 @@ export default function NewConnectionPage() {
     return (
       <div className="max-w-2xl mx-auto p-4">
         <Alert variant="info">
-          <AlertTitle>Pending Application Exists</AlertTitle>
+          <AlertTitle>{t.pendingTitle[language]}</AlertTitle>
           <AlertDescription>
-            You already have a pending new connection application. Please wait for it to be processed before submitting a new one.
+            {t.pendingDesc[language]}
           </AlertDescription>
         
         </Alert>
@@ -305,66 +336,66 @@ export default function NewConnectionPage() {
   return (
     <div className="p-4 space-y-6 text-black dark:text-black bg-gray-100 dark:bg-transparent">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold text-black dark:text-white">New Electricity Connection</h1>
-        <p className="text-black/70 dark:text-white/70">Apply for a new electricity connection to your property</p>
+        <h1 className="text-2xl font-bold text-black dark:text-white">{t.title[language]}</h1>
+        <p className="text-black/70 dark:text-white/70">{t.subtitle[language]}</p>
       </div>
 
       {error && (
         <Alert variant="warning">
           <XCircle className="h-5 w-5 text-black dark:text-black" />
-          <AlertTitle><span className="text-black dark:text-black">Error</span></AlertTitle>
+          <AlertTitle><span className="text-black dark:text-black">{t.error[language]}</span></AlertTitle>
           <AlertDescription><span className="text-black dark:text-black">{error}</span></AlertDescription>
         </Alert>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
-          <CardHeader><CardTitle className="text-black dark:text-black">Connection Details</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-black dark:text-black">{t.connectionDetails[language]}</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="connectionType">Type of Connection *</Label>
+              <Label htmlFor="connectionType">{t.typeOfConnection[language]}</Label>
               <Select onValueChange={handleConnectionTypeChange} value={formData.connectionType} required>
-                <SelectTrigger><SelectValue placeholder="Select connection type" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t.selectConnectionType[language]} /></SelectTrigger>
                 <SelectContent>{CONNECTION_TYPES.map(type => (<SelectItem key={type} value={type}>{type}</SelectItem>))}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="voltageLevel">Voltage Level *</Label>
+              <Label htmlFor="voltageLevel">{t.voltageLevel[language]}</Label>
               <Select onValueChange={handleVoltageLevelChange} value={formData.voltageLevel} required>
-                <SelectTrigger><SelectValue placeholder="Select voltage level" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t.selectVoltageLevel[language]} /></SelectTrigger>
                 <SelectContent>{VOLTAGE_LEVELS.map(lvl => (<SelectItem key={lvl} value={lvl}>{lvl}</SelectItem>))}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="plotNumber">Plot/Land Number *</Label>
+              <Label htmlFor="plotNumber">{t.plotNumber[language]}</Label>
               <Input id="plotNumber" name="plotNumber" value={formData.plotNumber} onChange={handleInputChange} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="estimatedLoad">Estimated Load (kW)</Label>
+              <Label htmlFor="estimatedLoad">{t.estimatedLoad[language]}</Label>
               <Input id="estimatedLoad" name="estimatedLoad" type="number" value={formData.estimatedLoad} onChange={handleInputChange} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="requiredDate">Required Date</Label>
+              <Label htmlFor="requiredDate">{t.requiredDate[language]}</Label>
               <Input id="requiredDate" name="requiredDate" type="date" value={formData.requiredDate} onChange={handleInputChange} />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-black dark:text-black">Required Documents</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-black dark:text-black">{t.requiredDocs[language]}</CardTitle></CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label>Property Ownership Document *</Label>
+              <Label>{t.propertyDoc[language]}</Label>
               <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => e.target.files && handleFileUpload('propertyDoc', Array.from(e.target.files))} required />
               {files.propertyDoc && <p className="text-sm text-black dark:text-black">{files.propertyDoc[0].name} selected</p>}
             </div>
             <div className="space-y-2">
-              <Label>Site Plan *</Label>
+              <Label>{t.sitePlan[language]}</Label>
               <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => e.target.files && handleFileUpload('sitePlan', Array.from(e.target.files))} required />
               {files.sitePlan && <p className="text-sm text-black dark:text-black">{files.sitePlan[0].name} selected</p>}
             </div>
             <div className="space-y-2">
-              <Label>ID Document (From Verification)</Label>
+              <Label>{t.idDoc[language]}</Label>
               <Input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => e.target.files && handleFileUpload('idDoc', Array.from(e.target.files))} />
               {files.idDoc && <p className="text-sm text-black dark:text-black">{files.idDoc[0].name} selected</p>}
             </div>
@@ -374,22 +405,22 @@ export default function NewConnectionPage() {
         {/* Cost estimate */}
         {estimatedCost && (
           <Card>
-            <CardHeader><CardTitle className="text-black dark:text-black">Cost Estimate</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-black dark:text-black">{t.costEstimate[language]}</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-4 gap-4">
-                <div className="space-y-1"><p className="text-sm text-black dark:text-black">Base Cost</p><p className="font-medium text-black dark:text-black">{estimatedCost.baseCost.toLocaleString()} ETB</p></div>
-                <div className="space-y-1"><p className="text-sm text-black dark:text-black">Voltage Rate</p><p className="font-medium text-black dark:text-black">{estimatedCost.voltageRate.toLocaleString()} ETB</p></div>
-                <div className="space-y-1"><p className="text-sm text-black dark:text-black">Tax (15%)</p><p className="font-medium text-black dark:text-black">{estimatedCost.tax.toLocaleString()} ETB</p></div>
-                <div className="space-y-1"><p className="text-sm text-black dark:text-black">Total</p><p className="font-bold text-black dark:text-black">{estimatedCost.total.toLocaleString()} ETB</p></div>
+                <div className="space-y-1"><p className="text-sm text-black dark:text-black">{t.baseCost[language]}</p><p className="font-medium text-black dark:text-black">{estimatedCost.baseCost.toLocaleString()} ETB</p></div>
+                <div className="space-y-1"><p className="text-sm text-black dark:text-black">{t.voltageRate[language]}</p><p className="font-medium text-black dark:text-black">{estimatedCost.voltageRate.toLocaleString()} ETB</p></div>
+                <div className="space-y-1"><p className="text-sm text-black dark:text-black">{t.tax[language]}</p><p className="font-medium text-black dark:text-black">{estimatedCost.tax.toLocaleString()} ETB</p></div>
+                <div className="space-y-1"><p className="text-sm text-black dark:text-black">{t.total[language]}</p><p className="font-bold text-black dark:text-black">{estimatedCost.total.toLocaleString()} ETB</p></div>
               </div>
             </CardContent>
           </Card>
         )}
 
         <div className="flex justify-end gap-4">
-          <Button type="button" variant="secondary" onClick={() => router.back()} disabled={isSubmitting}>Cancel</Button>
+          <Button type="button" variant="secondary" onClick={() => router.back()} disabled={isSubmitting}>{t.cancel[language]}</Button>
           <Button type="submit" disabled={isSubmitting} variant="outline">
-            {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</> : 'Submit Application'}
+            {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.submitting[language]}</> : t.submit[language]}
           </Button>
         </div>
       </form>

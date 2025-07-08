@@ -2,6 +2,7 @@
 
 import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
@@ -13,11 +14,13 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <ThemeProvider>
-        <html lang="en">
-          <body>{children}
-            <Toaster />
-          </body>
-        </html>
+        <LanguageProvider>
+          <html lang="en">
+            <body>{children}
+              <Toaster />
+            </body>
+          </html>
+        </LanguageProvider>
       </ThemeProvider>
     </ClerkProvider>
   );

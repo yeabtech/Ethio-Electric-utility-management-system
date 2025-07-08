@@ -17,7 +17,6 @@ const menuItems = [
   { label: 'Reporting', icon: BarChart2, color: '#FF8B94' },
   { label: 'Notifications', icon: Bell, color: '#FF9F1C' },
   { label: 'Analytics', icon: BarChart2, color: '#2EC4B6' },
-  { label: 'Reports', icon: BarChart2, color: '#E71D36' },
   { label: 'Support', icon: LifeBuoy, color: '#00B4D8' }
 ]
 

@@ -9,6 +9,7 @@ import CSOServiceApprovalPage from './services/page';
 import AssignTasksPage from './tasks/assign/page';
 import UsersPage from './users/page';
 import CustomerSupportPage from './support/page';
+import AnalyticsPage from './analytics/page';
 import "@/app/globals.css"
 
 export default function CustomerOperatorPage() {
@@ -37,6 +38,8 @@ export default function CustomerOperatorPage() {
         return <AssignTasksPage />;
       case 'Support':
         return <CustomerSupportPage />;
+      case 'Analytics':
+        return <AnalyticsPage />;
       default:
         return <div className="bg-white p-8 rounded-lg shadow-md">
           <p className="text-lg">Welcome to your Customer Service Operator dashboard</p>
@@ -51,6 +54,7 @@ export default function CustomerOperatorPage() {
     'services',
     'Tasks assign',
     'Support',
+    'Analytics',
   ].includes(activePage);
 
   return (

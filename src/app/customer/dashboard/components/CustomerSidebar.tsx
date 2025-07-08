@@ -6,6 +6,8 @@ import { ShieldCheck, XCircle, Clock, Zap, Home, Wrench, FileText, X, Sun, Moon 
 import { Button } from '@/components/ui/button'
 import { UserButton } from '@clerk/nextjs'
 import { useTheme } from '@/app/context/ThemeContext'
+import { useLanguage } from '@/app/context/LanguageContext'
+import React, { useState } from 'react'
 
 type Verification = {
   status: 'pending' | 'approved' | 'rejected' | 'not_verified'
@@ -53,7 +55,50 @@ export default function CustomerSidebar({
 }: CustomerSidebarProps) {
   const router = useRouter()
   const { theme, setTheme } = useTheme()
+  const { language, setLanguage } = useLanguage()
   const isVerified = verification?.status === 'approved'
+
+  // Translation object for sidebar labels
+  const t = {
+    home: { en: 'Home', am: 'ዋና ገጽ' },
+    verificationStatus: { en: 'Verification Status', am: 'የማረጋገጫ ሁኔታ' },
+    unverified: { en: 'Unverified Account', am: 'ያልተረጋገጠ መለያ' },
+    verifyNow: { en: 'Verify Now', am: 'አሁን ያረጋግጡ' },
+    verified: { en: 'Verified Account', am: 'የተረጋገጠ መለያ' },
+    verificationFailed: { en: 'Verification Failed', am: 'ማረጋገጫ አልተሳካም' },
+    tryAgain: { en: 'Try Again', am: 'ደግመው ይሞክሩ' },
+    inProgress: { en: 'Verification in Progress', am: 'ማረጋገጫ በሂደት ላይ' },
+    services: { en: 'Services', am: 'አገልግሎቶች' },
+    payment: { en: 'Payment', am: 'ክፍያ' },
+    pendingReceipts: { en: 'Pending Receipts', am: 'ደረሰኞች' },
+    newConnection: { en: 'New Connections', am: 'አዲስ መስመር' },
+    newConnectionDesc: { en: 'Apply for new electricity connections', am: 'ለአዲስ የኤሌክትሪክ ግንኙነቶች ያመልክቱ' },
+    repairs: { en: 'Repairs & Maintenance', am: ' ጥገና' },
+    repairsDesc: { en: 'Report electrical issues and request repairs', am: 'የኤሌክትሪክ ችግሮችን ያሳውቁ እና ጥገና ይጠይቁ' },
+    requestResponse: { en: 'Request Response', am: 'የጥያቄ መልስ' },
+    requestResponseDesc: { en: 'View your request responses', am: 'የጥያቄዎን ምላሾች ይመልከቱ' },
+  }
+
+  const SERVICE_CARDS_TRANSLATED = [
+    {
+      title: t.newConnection[language],
+      description: t.newConnectionDesc[language],
+      icon: <Zap className="w-6 h-6" style={{ color: '#FFD93D' }} />,
+      path: 'new-connection'
+    },
+    {
+      title: t.repairs[language],
+      description: t.repairsDesc[language],
+      icon: <Wrench className="w-6 h-6" style={{ color: '#FF6B6B' }} />,
+      path: 'repairs'
+    },
+    {
+      title: t.requestResponse[language],
+      description: t.requestResponseDesc[language],
+      icon: <FileText className="w-6 h-6" style={{ color: '#4ECDC4' }} />,
+      path: 'request-response'
+    }
+  ]
 
   return (
     <div
@@ -87,28 +132,28 @@ export default function CustomerSidebar({
       
 
         {/* Verification Status */}
-        <h2 className="text-sm md:text-base font-bold text-[var(--sidebar-text)] tracking-wide mt-1 md:mt-2 mb-1 uppercase">Verification Status</h2>
+        <h2 className="text-sm md:text-base font-bold text-[var(--sidebar-text)] tracking-wide mt-1 md:mt-2 mb-1 uppercase">{t.verificationStatus[language]}</h2>
         {!verification || verification.status === 'not_verified' ? (
           <div className="flex items-center gap-2 py-2 px-3 border border-[var(--sidebar-border)] rounded-lg bg-[var(--sidebar-hover)]/20">
             <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-[var(--sidebar-text)]" />
-            <span className="text-sm md:text-base text-[var(--sidebar-text)]">Unverified Account</span>
-            <Button variant="secondary" size="sm" onClick={() => router.push('/customer/verify')} className="ml-auto bg-[var(--sidebar-hover)] hover:bg-[var(--sidebar-hover)]/80 text-[var(--sidebar-text)] px-3 md:px-4 py-1 rounded-lg text-xs md:text-sm font-semibold shadow-none">Verify Now</Button>
+            <span className="text-sm md:text-base text-[var(--sidebar-text)]">{t.unverified[language]}</span>
+            <Button variant="secondary" size="sm" onClick={() => router.push('/customer/verify')} className="ml-auto bg-[var(--sidebar-hover)] hover:bg-[var(--sidebar-hover)]/80 text-[var(--sidebar-text)] px-3 md:px-4 py-1 rounded-lg text-xs md:text-sm font-semibold shadow-none">{t.verifyNow[language]}</Button>
           </div>
         ) : verification.status === 'approved' ? (
           <div className="flex items-center gap-2 py-2 px-3 border border-[var(--sidebar-border)] rounded-lg bg-[var(--sidebar-hover)]/20">
             <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-[var(--sidebar-text)]" />
-            <span className="text-sm md:text-base text-[var(--sidebar-text)] font-semibold">Verified Account</span>
+            <span className="text-sm md:text-base text-[var(--sidebar-text)] font-semibold">{t.verified[language]}</span>
           </div>
         ) : verification.status === 'rejected' ? (
           <div className="flex items-center gap-2 py-2 px-3 border border-[var(--sidebar-border)] rounded-lg bg-[var(--sidebar-hover)]/20">
             <XCircle className="h-5 w-5 md:h-6 md:w-6 text-[var(--sidebar-text)]" />
-            <span className="text-sm md:text-base text-[var(--sidebar-text)]">Verification Failed</span>
-            <Button variant="secondary" size="sm" onClick={() => router.push('/customer/verify')} className="ml-auto bg-[var(--sidebar-hover)] hover:bg-[var(--sidebar-hover)]/80 text-[var(--sidebar-text)] px-3 md:px-4 py-1 rounded-lg text-xs md:text-sm font-semibold shadow-none">Try Again</Button>
+            <span className="text-sm md:text-base text-[var(--sidebar-text)]">{t.verificationFailed[language]}</span>
+            <Button variant="secondary" size="sm" onClick={() => router.push('/customer/verify')} className="ml-auto bg-[var(--sidebar-hover)] hover:bg-[var(--sidebar-hover)]/80 text-[var(--sidebar-text)] px-3 md:px-4 py-1 rounded-lg text-xs md:text-sm font-semibold shadow-none">{t.tryAgain[language]}</Button>
           </div>
         ) : (
           <div className="flex items-center gap-2 py-2 px-3 border border-[var(--sidebar-border)] rounded-lg bg-[var(--sidebar-hover)]/20">
             <Clock className="h-5 w-5 md:h-6 md:w-6 text-[var(--sidebar-text)]" />
-            <span className="text-sm md:text-base text-[var(--sidebar-text)]">Verification in Progress</span>
+            <span className="text-sm md:text-base text-[var(--sidebar-text)]">{t.inProgress[language]}</span>
           </div>
         )}
 
@@ -132,15 +177,15 @@ export default function CustomerSidebar({
     >
       <div className="flex items-center">
         <Home className="w-6 h-6 mr-3" style={{ color: '#45B7D1' }} />
-        <span className="font-medium">Home</span>
+        <span className="font-medium">{t.home[language]}</span>
       </div>
     </Button>
   </div>
   {isVerified && (
     <>
-      <h2 className="text-base md:text-lg font-semibold text-[var(--sidebar-text)] mt-6 md:mt-8">Services</h2>
+      <h2 className="text-base md:text-lg font-semibold text-[var(--sidebar-text)] mt-6 md:mt-8">{t.services[language]}</h2>
       <div className="space-y-2 md:space-y-3 mt-2 md:mt-4">
-        {SERVICE_CARDS.map((service, index) => (
+        {SERVICE_CARDS_TRANSLATED.map((service, index) => (
           <div className="relative flex items-center" key={index}>
             {currentPage === service.path && (
               <>
@@ -170,7 +215,7 @@ export default function CustomerSidebar({
           </div>
         ))}
       </div>
-      <h2 className="text-base md:text-lg font-semibold text-[var(--sidebar-text)] mt-6 md:mt-8">Payment</h2>
+      <h2 className="text-base md:text-lg font-semibold text-[var(--sidebar-text)] mt-6 md:mt-8">{t.payment[language]}</h2>
       <div className="space-y-2 mb-2 md:mb-4 mt-2 md:mt-4">
         <div className="relative flex items-center">
           {currentPage === 'pending-receipts' && (
@@ -189,7 +234,7 @@ export default function CustomerSidebar({
               setCurrentPage('pending-receipts')
             }}
           >
-            <span className="text-sm md:text-base font-medium">Pending Receipts</span>
+            <span className="text-sm md:text-base font-medium">{t.pendingReceipts[language]}</span>
             {pendingReceipts > 0 && (
               <span className="ml-2 bg-[var(--sidebar-hover)] text-[var(--sidebar-text)] rounded-full px-2 md:px-3 py-0.5 text-xs md:text-sm font-bold shadow">{pendingReceipts}</span>
             )}
@@ -199,20 +244,30 @@ export default function CustomerSidebar({
     </>
   )}    
 
-        {/* Theme Toggle */}
+        {/* Theme & Language Toggle */}
         <div className="mt-auto flex justify-center pt-4 md:pt-6">
-          <div className="flex bg-[var(--card-bg)] rounded-full p-0.5 w-28 md:w-32 justify-between">
-            <button 
-              className={`flex-1 py-1 rounded-full flex items-center justify-center gap-1 ${theme === 'light' ? 'bg-[var(--sidebar-hover)] text-[var(--sidebar-text)]' : 'text-[#7ca7be] hover:text-[var(--sidebar-text)]'}`}
-              onClick={() => setTheme('light')}
+          <div className="flex bg-[var(--card-bg)] rounded-full p-0.5 w-full max-w-xs items-center justify-between gap-1">
+            <div className="flex flex-1 gap-1">
+              <button 
+                className={`w-full py-1 rounded-full flex items-center justify-center gap-1 ${theme === 'light' ? 'bg-[var(--sidebar-hover)] text-[var(--sidebar-text)]' : 'text-[#7ca7be] hover:text-[var(--sidebar-text)]'}`}
+                onClick={() => setTheme('light')}
+              >
+                <Sun className="w-3 h-3" />
+              </button>
+              <button 
+                className={`w-full py-1 rounded-full flex items-center justify-center gap-1 ${theme === 'dark' ? 'bg-[var(--sidebar-hover)] text-[var(--sidebar-text)]' : 'text-[#7ca7be] hover:text-[var(--sidebar-text)]'}`}
+                onClick={() => setTheme('dark')}
+              >
+                <Moon className="w-3 h-3" />
+              </button>
+            </div>
+            <div className="h-6 w-px bg-[var(--sidebar-border)] mx-2" />
+            <button
+              className={`flex-1 py-1 rounded-full flex items-center justify-center gap-1 ${language === 'en' ? 'bg-[var(--sidebar-hover)]' : 'text-[#7ca7be] hover:text-[var(--sidebar-text)]'}`}
+              style={{ minWidth: 60, color: '#000' }}
+              onClick={() => setLanguage(language === 'en' ? 'am' : 'en')}
             >
-              <Sun className="w-3 h-3" />
-            </button>
-            <button 
-              className={`flex-1 py-1 rounded-full flex items-center justify-center gap-1 ${theme === 'dark' ? 'bg-[var(--sidebar-hover)] text-[var(--sidebar-text)]' : 'text-[#7ca7be] hover:text-[var(--sidebar-text)]'}`}
-              onClick={() => setTheme('dark')}
-            >
-              <Moon className="w-3 h-3" />
+              {language === 'en' ? 'amh' : 'eng'}
             </button>
           </div>
         </div>
