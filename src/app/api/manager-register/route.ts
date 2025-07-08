@@ -40,6 +40,19 @@ export async function POST(req: Request) {
       })
     }
 
+    // Save technician info if role is technician
+    if (role === 'technician') {
+      await prisma.technician.create({
+        data: {
+          userId: user.id,
+          subCity,
+          woreda: String(woreda),
+          skills: [], // Default empty skills, can be updated later
+          // status will default to "available"
+        }
+      })
+    }
+
     return NextResponse.json({ 
       success: true,
       user: {
