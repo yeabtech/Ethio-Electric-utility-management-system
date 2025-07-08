@@ -427,6 +427,18 @@ export default function TechnicianTasksPage() {
                   </p>
                 </div>
               </div>
+
+              {currentTask.receipt && (
+                <div className="flex items-center space-x-3 p-4 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
+                  <div className="p-2 bg-gray-100 rounded-lg shadow-sm">
+                    <span role="img" aria-label="money">💵</span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">Amount (ETB)</p>
+                    <p className="font-semibold text-gray-900">ETB {currentTask.receipt.grandTotal.toFixed(2)}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
             
             <CardFooter className="relative p-6 bg-gradient-to-r from-gray-100 to-gray-50 border-t border-gray-200">
@@ -544,6 +556,18 @@ export default function TechnicianTasksPage() {
                         </div>
                       </div>
                     </div>
+
+                    {task.receipt && (
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-yellow-100 rounded-lg">
+                          <span role="img" aria-label="money">💵</span>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Amount (ETB)</p>
+                          <p className="font-medium text-gray-900 text-sm">ETB {task.receipt.grandTotal.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                   
                   <CardFooter className="p-6 bg-gray-50 border-t border-gray-100">

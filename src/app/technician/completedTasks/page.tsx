@@ -20,7 +20,8 @@ import {
   Clock,
   DollarSign,
   Filter,
-  Download
+  Download,
+  X
 } from 'lucide-react'
 import "@/app/globals.css"
 
@@ -76,6 +77,8 @@ export default function CompletedTasksPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [selectedReport, setSelectedReport] = useState<Task['report'] | null>(null)
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -289,13 +292,16 @@ export default function CompletedTasksPage() {
 
                     {/* Action Buttons */}
                     <div className="flex flex-col space-y-2 lg:ml-6">
-                      {task.report && (
-                        <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                          <FileText className="h-4 w-4" />
-                          <span>View Report</span>
-                        </Button>
-                      )}
-                      <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center space-x-2"
+                        onClick={() => {
+                          setSelectedReport(task.report || null)
+                          setShowReportModal(true)
+                        }}
+                        disabled={!task.report}
+                      >
                         <FileText className="h-4 w-4" />
                         <span>My Report</span>
                       </Button>
@@ -306,6 +312,50 @@ export default function CompletedTasksPage() {
             ))
           )}
         </div>
+
+        {/* Report Modal */}
+        {showReportModal && selectedReport && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="relative w-full max-w-2xl p-0">
+              <div className="bg-white border border-gray-200 rounded-xl shadow-2xl p-8 relative overflow-y-auto max-h-[90vh] min-h-[400px] min-w-[350px] flex flex-col items-center" style={{ background: undefined }}>
+                <button
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowReportModal(false)}
+                  aria-label="Close"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+                <h2 className="text-2xl font-bold mb-6 text-center underline decoration-blue-200">Task Report</h2>
+                {selectedReport.data && selectedReport.data.length > 0 ? (
+                  <div className="w-full space-y-4">
+                    {selectedReport.data.map((field, idx) => (
+                      <div key={idx} className="flex flex-col md:flex-row md:items-center md:justify-between border-b pb-2 last:border-b-0">
+                        <span className="font-medium text-gray-700 md:w-1/3">{field.fieldName}:</span>
+                        {field.fieldName.toLowerCase().includes('image') || field.fieldName.toLowerCase().includes('photo') || field.fieldName.toLowerCase().includes('signature') ? (
+                          <img
+                            src={field.fieldValue}
+                            alt={field.fieldName}
+                            className="mt-2 md:mt-0 rounded shadow border max-h-48 max-w-xs object-contain bg-gray-50"
+                            onError={e => (e.currentTarget.style.display = 'none')}
+                          />
+                        ) : (
+                          <span className="text-gray-900 md:w-2/3 break-words">{field.fieldValue}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-gray-500">No report data available.</div>
+                )}
+                <div className="mt-8 flex justify-end w-full">
+                  <Button variant="outline" onClick={() => setShowReportModal(false)}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Pagination Info */}
         {filteredTasks.length > 0 && (

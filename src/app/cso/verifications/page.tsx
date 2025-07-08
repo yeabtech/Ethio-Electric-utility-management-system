@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import "@/app/globals.css"
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { ArrowLeft } from 'lucide-react'
 
 type Verification = {
   id: string
@@ -28,6 +31,9 @@ export default function VerificationQueue() {
   const [verifications, setVerifications] = useState<Verification[]>([])
   const [loading, setLoading] = useState(true)
   const [csoLocation, setCsoLocation] = useState<{ subCity: string; woreda: string } | null>(null)
+  const [selectedVerification, setSelectedVerification] = useState<any | null>(null)
+  const [detailsLoading, setDetailsLoading] = useState(false)
+  const [detailsError, setDetailsError] = useState('')
   const router = useRouter()
 
   const fetchVerifications = async (userId: string) => {
@@ -54,6 +60,21 @@ export default function VerificationQueue() {
       fetchVerifications(user.id)
     }
   }, [user?.id])
+
+  const handleShowDetails = async (id: string) => {
+    setDetailsLoading(true)
+    setDetailsError('')
+    try {
+      const response = await fetch(`/api/cso/verifications/${id}`)
+      if (!response.ok) throw new Error('Failed to fetch verification details')
+      const data = await response.json()
+      setSelectedVerification(data)
+    } catch (err) {
+      setDetailsError('Failed to load verification data')
+    } finally {
+      setDetailsLoading(false)
+    }
+  }
 
   const columns: ColumnDef<Verification>[] = [
     {
@@ -183,7 +204,7 @@ export default function VerificationQueue() {
               disabled={isProcessing}
               onClick={() => {
                 setProcessingAction('details');
-                router.push(`/cso/verifications/${row.original.id}`);
+                handleShowDetails(row.original.id);
               }}
             >
               {processingAction === 'details' ? (
@@ -198,6 +219,183 @@ export default function VerificationQueue() {
       }
     }
   ]
+
+  // Inline details view
+  if (selectedVerification) {
+    if (detailsLoading) return <div className="p-4">Loading...</div>;
+    if (detailsError) return <div className="p-4 text-red-500">Error: {detailsError}</div>;
+    const verification = selectedVerification;
+    return (
+      <div className="container mx-auto p-4 space-y-6">
+        <div className="sticky top-0 bg-white z-10 pb-4">
+          <Button
+            variant="secondary"
+            onClick={() => setSelectedVerification(null)}
+            className="mb-4 text-lg py-10 px-6"
+          >
+            <ArrowLeft className="mr-2" /> Go Back to Verifications
+          </Button>
+        </div>
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Verification Details</h1>
+          <div className="space-x-2">
+            <Badge variant={verification.status === 'approved' ? 'success' : 
+                           verification.status === 'rejected' ? 'destructive' : 'warning'} >
+              {verification.status.toUpperCase()}
+            </Badge>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Personal Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Personal Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <img 
+                  src={verification.user.imageUrl} 
+                  alt="User" 
+                  className="w-16 h-16 rounded-full"
+                />
+                <div>
+                  <p className="font-medium">{verification.user.firstName} {verification.user.lastName}</p>
+                  <p className="text-sm text-gray-500">{verification.user.email}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">First Name</p>
+                  <p>{verification.firstName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Last Name</p>
+                  <p>{verification.lastName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Gender</p>
+                  <p>{verification.gender}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Date of Birth</p>
+                  <p>{new Date(verification.dateOfBirth).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Identity Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Identity Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500">Mobile Number</p>
+                <p>{verification.mobileNumber}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">ID Type</p>
+                  <p>{verification.idType.replace('_', ' ').toUpperCase()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">ID Number</p>
+                  <p>{verification.idNumber}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Address Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Address Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Region</p>
+                  <p>{verification.region}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Sub City</p>
+                  <p>{verification.subCity}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Woreda</p>
+                  <p>{verification.woreda}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Kebele</p>
+                  <p>{verification.kebele}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Home Number</p>
+                  <p>{verification.homeNumber}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Nationality</p>
+                  <p>{verification.nationality}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Document Images */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Document Images</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Personal Photo</p>
+                <img 
+                  src={verification.personalPhoto} 
+                  alt="Personal Photo" 
+                  className="w-full h-40 object-cover rounded-lg border"
+                />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-2">ID Photo (Front)</p>
+                <img 
+                  src={verification.idPhotoFront} 
+                  alt="ID Photo Front" 
+                  className="w-full h-40 object-cover rounded-lg border"
+                />
+              </div>
+              {verification.idPhotoBack && (
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">ID Photo (Back)</p>
+                  <img 
+                    src={verification.idPhotoBack} 
+                    alt="ID Photo Back" 
+                    className="w-full h-40 object-cover rounded-lg border"
+                  />
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Rejection Reason */}
+        {verification.status === 'rejected' && verification.rejectionReason && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Rejection Reason</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-red-600 font-semibold">{verification.rejectionReason}</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto py-6 px-4">

@@ -39,6 +39,7 @@ export default function CSOServiceApprovalPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [csoLocation, setCsoLocation] = useState<{subCity: string, woreda: string} | null>(null)
+  const [selectedService, setSelectedService] = useState<ServiceApplication | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -188,7 +189,7 @@ export default function CSOServiceApprovalPage() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => router.push(`/cso/services/${service.id}`)}
+              onClick={() => setSelectedService(service)}
             >
               Details
             </Button>
@@ -229,6 +230,64 @@ export default function CSOServiceApprovalPage() {
         </AlertDescription>
       </Alert>
     )
+  }
+
+  if (selectedService) {
+    // Use verification for name, fallback to Clerk user for current user
+    const isCurrentUser = selectedService.user.id === user?.id;
+    const verification = selectedService.user.verification;
+    const displayFirstName = (verification && typeof verification === 'object' && 'firstName' in verification && typeof verification.firstName === 'string') ? verification.firstName : (isCurrentUser ? user?.firstName ?? '' : '');
+    const displayLastName = (verification && typeof verification === 'object' && 'lastName' in verification && typeof verification.lastName === 'string') ? verification.lastName : (isCurrentUser ? user?.lastName ?? '' : '');
+    return (
+      <div className="flex justify-center items-center min-h-[600px]">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8 w-full max-w-xl">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <ShieldCheck className="w-6 h-6 text-green-600" /> Service Details
+            </h2>
+            <Button variant="outline" onClick={() => setSelectedService(null)}>
+              Back
+            </Button>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-gray-700">Customer:</span>
+              <span className="text-lg">{displayFirstName} {displayLastName}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-gray-700">Email:</span>
+              <span>{selectedService.user.email}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-gray-700">Service Type:</span>
+              <span>{selectedService.serviceType}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-gray-700">Plot Number:</span>
+              <span>{selectedService.metadata.plotNumber || 'N/A'}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-gray-700">Voltage Level:</span>
+              <span>{selectedService.metadata.voltageLevel || 'N/A'}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-gray-700">Status:</span>
+              <Badge variant={selectedService.status === 'approved' ? 'success' : selectedService.status === 'rejected' ? 'destructive' : 'warning'}>
+                {selectedService.status.toUpperCase()}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-gray-700">Location:</span>
+              <span>{verification?.subCity || 'N/A'}, Woreda {verification?.woreda || 'N/A'}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="font-semibold text-gray-700">Requested At:</span>
+              <span>{new Date(selectedService.createdAt).toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

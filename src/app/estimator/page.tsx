@@ -86,7 +86,7 @@ export default function EstimatorPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#E6E6E6]">
+    <div className="min-h-screen flex" style={{ backgroundImage: 'url(/bg.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
       {/* Sidebar */}
       <Sidebar onPageChange={setActivePage} />
       
