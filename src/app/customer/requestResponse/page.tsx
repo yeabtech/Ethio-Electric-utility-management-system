@@ -5,6 +5,8 @@ import { useUser } from "@clerk/nextjs";
 import { ServiceApplication } from "@prisma/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 
 interface ServiceApplicationWithDetails extends ServiceApplication {
@@ -17,8 +19,17 @@ interface ServiceApplicationWithDetails extends ServiceApplication {
   task?: {
     status: string;
     report?: {
+      id: string;
       status: string;
       priority: string;
+      comments?: Array<{
+        id: string;
+        content: string;
+        createdAt: Date;
+        author: {
+          email: string;
+        };
+      }>;
     } | null;
   } | null;
 }
@@ -27,6 +38,8 @@ export default function RequestResponsePage() {
   const { user } = useUser();
   const [applications, setApplications] = useState<ServiceApplicationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [feedbackInputs, setFeedbackInputs] = useState<{ [key: string]: string }>({});
+  const [submittingFeedback, setSubmittingFeedback] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -57,6 +70,44 @@ export default function RequestResponsePage() {
         return "bg-yellow-500";
       default:
         return "bg-gray-500";
+    }
+  };
+
+  const handleFeedbackSubmit = async (reportId: string, applicationId: string) => {
+    const feedback = feedbackInputs[applicationId];
+    if (!feedback?.trim()) return;
+
+    setSubmittingFeedback(prev => ({ ...prev, [applicationId]: true }));
+
+    try {
+      const response = await fetch('/api/customer/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reportId,
+          content: feedback.trim()
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit feedback');
+      }
+
+      // Clear the input and refresh applications
+      setFeedbackInputs(prev => ({ ...prev, [applicationId]: '' }));
+      
+      // Refresh the applications to show the new comment
+      const refreshResponse = await fetch(`/api/customer/applications_`);
+      if (refreshResponse.ok) {
+        const data = await refreshResponse.json();
+        setApplications(data);
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+    } finally {
+      setSubmittingFeedback(prev => ({ ...prev, [applicationId]: false }));
     }
   };
 
@@ -131,6 +182,55 @@ export default function RequestResponsePage() {
                         <div className="mt-2 p-4 bg-white dark:bg-white rounded-md">
                           <p className="text-sm font-medium text-black dark:text-black">Task done:</p>
                           <p className="text-black dark:text-black">Signed</p>
+                          
+                          {/* Customer Feedback Section */}
+                          <div className="mt-4 pt-4 border-t border-gray-200">
+                            <h4 className="text-sm font-medium text-black dark:text-black mb-3">Customer Feedback</h4>
+                            
+                            {/* Show feedback input only if no previous comments exist */}
+                            {(!application.task.report.comments || application.task.report.comments.length === 0) && (
+                              <div className="space-y-2 mb-3">
+                                <Textarea
+                                  placeholder="Share your feedback about the service..."
+                                  value={feedbackInputs[application.id] || ''}
+                                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFeedbackInputs(prev => ({ 
+                                    ...prev, 
+                                    [application.id]: e.target.value 
+                                  }))}
+                                  className="w-full min-h-[80px]"
+                                />
+                                <div className="flex justify-end">
+                                  <Button
+                                    onClick={() => handleFeedbackSubmit(application.task!.report!.id, application.id)}
+                                    disabled={submittingFeedback[application.id] || !feedbackInputs[application.id]?.trim()}
+                                    className="px-6"
+                                  >
+                                    {submittingFeedback[application.id] ? 'Submitting...' : 'Submit Feedback'}
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Existing Comments */}
+                            {application.task.report.comments && application.task.report.comments.length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-xs text-gray-600 dark:text-gray-600 mb-2">Previous feedback:</p>
+                                {application.task.report.comments.map((comment) => (
+                                  <div key={comment.id} className="p-3 bg-gray-50 dark:bg-gray-100 rounded-md">
+                                    <div className="flex justify-between items-start mb-1">
+                                      <p className="text-xs text-gray-600 dark:text-gray-600">
+                                        {comment.author.email}
+                                      </p>
+                                      <p className="text-xs text-gray-500 dark:text-gray-500">
+                                        {format(new Date(comment.createdAt), "MMM dd, yyyy")}
+                                      </p>
+                                    </div>
+                                    <p className="text-sm text-black dark:text-black">{comment.content}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>

@@ -40,8 +40,24 @@ export async function GET(request: Request) {
             status: true,
             report: {
               select: {
+                id: true,
                 status: true,
                 priority: true,
+                comments: {
+                  select: {
+                    id: true,
+                    content: true,
+                    createdAt: true,
+                    author: {
+                      select: {
+                        email: true
+                      }
+                    }
+                  },
+                  orderBy: {
+                    createdAt: "desc"
+                  }
+                }
               },
             },
           },
@@ -60,8 +76,10 @@ export async function GET(request: Request) {
             status: app.task.status,
             report: app.task.report
               ? {
+                  id: app.task.report.id,
                   status: app.task.report.status,
                   priority: app.task.report.priority,
+                  comments: app.task.report.comments,
                 }
               : null,
           }
