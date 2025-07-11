@@ -10,6 +10,7 @@ import AssignTasksPage from './tasks/assign/page';
 import UsersPage from './users/page';
 import CustomerSupportPage from './support/page';
 import AnalyticsPage from './analytics/page';
+import CSOReportsPage from './report/page';
 import "@/app/globals.css";
 
 export default function CustomerOperatorPageClient() {
@@ -36,6 +37,8 @@ export default function CustomerOperatorPageClient() {
         return <CSOServiceApprovalPage />;
       case 'Tasks assign':
         return <AssignTasksPage />;
+      case 'Reports':
+        return <CSOReportsPage />;
       case 'Support':
         return <CustomerSupportPage />;
       case 'Analytics':
@@ -53,6 +56,7 @@ export default function CustomerOperatorPageClient() {
     'verfiy users',
     'services',
     'Tasks assign',
+    'Reports',
     'Support',
     'Analytics',
   ].includes(activePage);

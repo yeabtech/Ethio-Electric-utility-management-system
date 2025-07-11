@@ -14,7 +14,7 @@ const menuItems = [
   { label: 'verfiy users', icon: UserCheck, color: '#96CEB4' },
   { label: 'services', icon: Folder, color: '#FFD93D' },
   { label: 'Tasks assign', icon: CheckSquare, color: '#6C5CE7' },
-  { label: 'Reporting', icon: BarChart2, color: '#FF8B94' },
+  { label: 'Reports', icon: BarChart2, color: '#FF8B94' },
   { label: 'Notifications', icon: Bell, color: '#FF9F1C' },
   { label: 'Analytics', icon: BarChart2, color: '#2EC4B6' },
   { label: 'Support', icon: LifeBuoy, color: '#00B4D8' }
