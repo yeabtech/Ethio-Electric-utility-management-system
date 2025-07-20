@@ -77,7 +77,7 @@ useEffect(() => {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <div className="flex-1 p-8 md:p-12 ml-0 md:ml-72 flex justify-center items-start">
+      <div className="flex-1 p-8 md:p-12 flex justify-center items-start">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 md:p-8 w-full max-w-5xl text-black">
           <div className="sticky top-0 bg-white z-10 pb-4">
             <Button
