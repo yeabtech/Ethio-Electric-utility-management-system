@@ -26,6 +26,7 @@ import {
   FileAudio,
   File
 } from 'lucide-react'
+import { useUser } from '@clerk/nextjs'
 
 interface Report {
   id: string
@@ -64,11 +65,14 @@ interface Report {
 }
 
 export default function CSOReportsPage() {
+  const { user } = useUser();
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [expandedReports, setExpandedReports] = useState<Set<string>>(new Set())
   const [exporting, setExporting] = useState(false)
+  // CSO location state
+  const [csoLocation, setCsoLocation] = useState<{ subCity: string; woreda: string } | null>(null)
   
   // Filter states
   const [technicianFilter, setTechnicianFilter] = useState('')
@@ -77,30 +81,35 @@ export default function CSOReportsPage() {
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
-    fetchReports()
-  }, [technicianFilter, startDate, endDate])
-
-  const fetchReports = async () => {
-    setLoading(true)
-    setError('')
-    
-    try {
-      const params = new URLSearchParams()
-      if (technicianFilter) params.append('technicianName', technicianFilter)
-      if (startDate) params.append('startDate', startDate)
-      if (endDate) params.append('endDate', endDate)
-
-      const response = await fetch(`/api/cso/reports?${params.toString()}`)
-      if (!response.ok) throw new Error('Failed to fetch reports')
-      
-      const data = await response.json()
-      setReports(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch reports')
-    } finally {
-      setLoading(false)
+    // Fetch CSO location first, then fetch reports
+    const fetchLocationAndReports = async () => {
+      setLoading(true)
+      setError('')
+      try {
+        if (!user?.id) throw new Error('User not loaded')
+        // Fetch CSO location
+        const locRes = await fetch(`/api/employee-info?userId=${user.id}`)
+        if (!locRes.ok) throw new Error('Failed to fetch CSO location')
+        const locData = await locRes.json()
+        setCsoLocation({ subCity: locData.subCity, woreda: locData.woreda })
+        // Fetch reports (with filters)
+        const params = new URLSearchParams()
+        if (technicianFilter) params.append('technicianName', technicianFilter)
+        if (startDate) params.append('startDate', startDate)
+        if (endDate) params.append('endDate', endDate)
+        const response = await fetch(`/api/cso/reports?${params.toString()}`)
+        if (!response.ok) throw new Error('Failed to fetch reports')
+        const data = await response.json()
+        setReports(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch reports')
+      } finally {
+        setLoading(false)
+      }
     }
-  }
+    fetchLocationAndReports()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, technicianFilter, startDate, endDate])
 
   const toggleReportExpansion = (reportId: string) => {
     const newExpanded = new Set(expandedReports)
@@ -151,9 +160,24 @@ export default function CSOReportsPage() {
     return <File className="w-4 h-4" />
   }
 
-  const filteredReports = reports.filter(report => {
+  // Filter reports by CSO location (subcity and woreda)
+  const locationFilteredReports = csoLocation
+    ? reports.filter(report => {
+        // Try to extract subcity and woreda from customerLocation string (format: "Subcity, Woreda X")
+        if (!report.customerLocation) return false
+        const [subCityPart, woredaPart] = report.customerLocation.split(',').map(s => s.trim())
+        const subCity = subCityPart
+        const woreda = woredaPart?.replace(/^Woreda\s+/i, '')
+        return (
+          subCity?.toLowerCase() === csoLocation.subCity.toLowerCase() &&
+          woreda?.toString() === csoLocation.woreda.toString()
+        )
+      })
+    : []
+
+  // Apply search filter on top of location filter
+  const filteredReports = locationFilteredReports.filter(report => {
     if (!searchTerm) return true
-    
     const searchLower = searchTerm.toLowerCase()
     return (
       report.technicianName.toLowerCase().includes(searchLower) ||
@@ -209,6 +233,16 @@ export default function CSOReportsPage() {
         <div className="flex items-center gap-2">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>Loading reports...</span>
+        </div>
+      </div>
+    )
+  }
+  if (!csoLocation) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2 text-red-600">
+          <AlertCircle className="w-6 h-6" />
+          <span>Could not determine your service location. Please contact your manager.</span>
         </div>
       </div>
     )

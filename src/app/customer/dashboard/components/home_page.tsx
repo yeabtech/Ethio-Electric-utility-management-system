@@ -29,6 +29,7 @@ interface HomePageProps {
 const t = {
   welcome: { en: 'Welcome to EEUMS Dashboard', am: 'ወደ ኢትዮ ኤሌከትሪክ እንኳን ደህና መጡ' },
   verificationRequired: { en: 'Account Verification Required', am: 'የመለያ ማረጋገጫ ያስፈልጋል' },
+  verificationPending: { en: 'Verification Pending', am: 'ማረጋገጫ በመጠባበቅ ላይ' },
   pending: { en: 'Your verification is pending approval. Some features are limited until verification is complete.', am: 'የእርስዎ ማረጋገጫ በመጠባበቅ ላይ ነው። ' },
   rejected: { en: 'Your verification was rejected: ', am: 'የእርስዎ ማረጋገጫ ተቀባይነት አላገኘም፡ ' },
   rejectedNoReason: { en: 'No reason specified', am: 'ምክንያቱ አልተገለጸም' },
@@ -96,25 +97,49 @@ export default function HomePage({ verification, loading }: HomePageProps) {
 
           
           {!isVerified && (
-            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className={`mt-4 p-4 border rounded-lg ${
+              isPending 
+                ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' 
+                : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+            }`}>
               <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck className="h-5 w-5 text-red-500 dark:text-red-400" />
-                <h3 className="font-medium text-red-700 dark:text-red-300">{t.verificationRequired[language]}</h3>
+                <ShieldCheck className={`h-5 w-5 ${
+                  isPending 
+                    ? 'text-yellow-500 dark:text-yellow-400' 
+                    : 'text-red-500 dark:text-red-400'
+                }`} />
+                <h3 className={`font-medium ${
+                  isPending 
+                    ? 'text-yellow-700 dark:text-yellow-300' 
+                    : 'text-red-700 dark:text-red-300'
+                }`}>
+                  {isPending ? t.verificationPending[language] : t.verificationRequired[language]}
+                </h3>
               </div>
-              <p className="text-red-600 dark:text-red-300 text-sm mb-3">
+              <p className={`text-sm mb-3 ${
+                isPending 
+                  ? 'text-yellow-600 dark:text-yellow-300' 
+                  : 'text-red-600 dark:text-red-300'
+              }`}>
                 {isPending ? 
                   t.pending[language] :
                 isRejected ?
                   `${t.rejected[language]}${verification.rejectionReason || t.rejectedNoReason[language]}. ${t.rejectedResubmit[language]}` :
                   t.verifyPrompt[language]}
               </p>
-              <Button 
-                variant="secondary" 
-                className="bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-800/50 dark:hover:bg-red-800 dark:text-red-200" 
-                onClick={() => router.push('/customer/verify')}
-              >
-                {isRejected ? t.resubmit[language] : t.verify[language]}
-              </Button>
+              {!isPending && (
+                <Button 
+                  variant="secondary" 
+                  className={`${
+                    isRejected 
+                      ? 'bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-800/50 dark:hover:bg-red-800 dark:text-red-200'
+                      : 'bg-blue-100 hover:bg-blue-200 text-blue-700 dark:bg-blue-800/50 dark:hover:bg-blue-800 dark:text-blue-200'
+                  }`}
+                  onClick={() => router.push('/customer/verify')}
+                >
+                  {isRejected ? t.resubmit[language] : t.verify[language]}
+                </Button>
+              )}
             </div>
           )}
         </div>

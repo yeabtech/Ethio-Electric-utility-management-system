@@ -13,7 +13,7 @@ const menuItems = [
   { label: 'Register Employee', icon: UserPlus, color: '#FF6B6B' },
   { label: 'CSO Management', icon: UserCog, color: '#96CEB4' },
   { label: 'Service Management', icon: FileText, color: '#FFD93D' },
-  { label: 'Office Management', icon: Building2, color: '#6C5CE7' },
+  { label: 'Report Templates', icon: Building2, color: '#6C5CE7' },
   { label: 'News', icon: Newspaper, color: '#FF8B94' },
   { label: 'Analytics', icon: BarChart2, color: '#FF8B94' },
   { label: 'Notifications', icon: Bell, color: '#FF9F1C' },
