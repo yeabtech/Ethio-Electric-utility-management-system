@@ -27,8 +27,8 @@ export default function ManagerDashboard() {
         const custRes = await fetch("/api/customer-verifications-all");
         const custData = await custRes.json();
         setCustomerCount(Array.isArray(custData) ? custData.length : 0);
-        // Services
-        const servRes = await fetch("/api/cso/services/approved");
+        // Services (fetch all services, not just approved)
+        const servRes = await fetch("/api/services-all");
         const servData = await servRes.json();
         setServiceCount(Array.isArray(servData) ? servData.length : 0);
         // Revenue (from estimator statistics)
