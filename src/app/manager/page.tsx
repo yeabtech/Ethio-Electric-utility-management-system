@@ -60,6 +60,17 @@ export default function ManagerPage() {
             />
           </div>
         );
+      case 'Users Account':
+        return (
+          <div className="absolute inset-0 w-full h-full">
+            <iframe
+              src="/manager/usersAccount"
+              className="w-full h-full border-0"
+              title="Users Account"
+              style={{ overflow: 'hidden' }}
+            />
+          </div>
+        );
       default:
         return (
           <div className="bg-white p-8 rounded-lg shadow-md">

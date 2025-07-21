@@ -47,7 +47,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/estimator/statistics",
   "/api/estimator/statistics/(.*)",
   "/api/report/templates",
-  "/api/get-clerk-user"
+  "/api/get-clerk-user",
+  "/api/customer-verficationS-all"
 
   
   
