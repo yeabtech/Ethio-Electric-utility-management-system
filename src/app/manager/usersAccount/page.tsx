@@ -144,15 +144,17 @@ export default function UsersAccountPage() {
     {
       accessorKey: "user.email",
       header: "Email",
-      cell: ({ row }) => row.original.user.email,
+      cell: ({ row }) => <span className="text-black">{row.original.user.email}</span>,
     },
     {
       accessorKey: "subCity",
       header: "Sub-city",
+      cell: ({ row }) => <span className="text-black">{row.original.subCity}</span>,
     },
     {
       accessorKey: "woreda",
       header: "Woreda",
+      cell: ({ row }) => <span className="text-black">{row.original.woreda}</span>,
     },
     {
       accessorKey: "status",
