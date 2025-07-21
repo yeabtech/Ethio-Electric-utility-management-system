@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { useUser } from "@clerk/nextjs";
+import { Download } from "lucide-react";
 
 interface Message {
   id: string;
@@ -22,6 +23,7 @@ export default function EmployeeInboxPage() {
   const [internalUserId, setInternalUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openMessage, setOpenMessage] = useState<Message | null>(null);
   const { toast } = useToast();
 
   // Get internal user ID from Clerk user ID
@@ -61,6 +63,15 @@ export default function EmployeeInboxPage() {
     }
   };
 
+  const handleOpen = async (msg: Message) => {
+    setOpenMessage(msg);
+    if (!msg.read) {
+      await markAsRead(msg.id);
+    }
+  };
+
+  const handleCloseModal = () => setOpenMessage(null);
+
   return (
     <div className="max-w-3xl mx-auto py-8 space-y-8">
       <Card>
@@ -74,24 +85,78 @@ export default function EmployeeInboxPage() {
             <div className="text-gray-500">No messages in your inbox.</div>
           ) : (
             messages.map((msg) => (
-              <div key={msg.id} className="border-b pb-3 mb-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-black">
-                    {msg.subject || "(No Subject)"}
-                  </span>
-                  <span className="text-xs text-gray-400 ml-2">
-                    {new Date(msg.sentAt).toLocaleString()}
-                  </span>
-                  <Badge variant={msg.read ? "success" : "outline"}>
-                    {msg.read ? "Read" : "Unread"}
-                  </Badge>
+              <div key={msg.id} className="border-b pb-3 mb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-black">
+                      {msg.subject || "(No Subject)"}
+                    </span>
+                    <span className="text-xs text-gray-400 ml-2">
+                      {new Date(msg.sentAt).toLocaleString()}
+                    </span>
+                    <Badge variant={msg.read ? "success" : "outline"}>
+                      {msg.read ? "Read" : "Unread"}
+                    </Badge>
+                  </div>
+                  <div className="text-black text-sm">
+                    <span className="font-medium">From: </span>
+                    {msg.sender ? (
+                      <>
+                        <span className="text-black font-semibold">{msg.sender.name}</span>
+                        <span className="text-black ml-2">({msg.sender.email})</span>
+                      </>
+                    ) : (
+                      <span className="text-black">Unknown sender</span>
+                    )}
+                  </div>
                 </div>
-                <div className="text-black mb-2 whitespace-pre-line">{msg.content}</div>
-                {msg.attachments && msg.attachments.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {msg.attachments.map((att) => (
+                <div className="flex-shrink-0">
+                  <Button size="sm" onClick={() => handleOpen(msg)}>
+                    Open
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modal for message content */}
+      {openMessage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative">
+            <button
+              className="absolute top-2 right-2 text-black text-xl font-bold"
+              onClick={handleCloseModal}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <div className="mb-2">
+              <span className="font-semibold text-black">Subject: </span>
+              <span className="text-black">{openMessage.subject || "(No Subject)"}</span>
+            </div>
+            <div className="mb-2">
+              <span className="font-semibold text-black">From: </span>
+              {openMessage.sender ? (
+                <>
+                  <span className="text-black font-semibold">{openMessage.sender.name}</span>
+                  <span className="text-black ml-2">({openMessage.sender.email})</span>
+                </>
+              ) : (
+                <span className="text-black">Unknown sender</span>
+              )}
+            </div>
+            <div className="mb-4 text-black whitespace-pre-line">
+              {openMessage.content}
+            </div>
+            {openMessage.attachments && openMessage.attachments.length > 0 && (
+              <div className="mb-2">
+                <span className="font-semibold text-black">Attachments:</span>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {openMessage.attachments.map((att) => (
+                    <div key={att.url} className="flex items-center gap-1">
                       <a
-                        key={att.url}
                         href={att.url}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -99,21 +164,22 @@ export default function EmployeeInboxPage() {
                       >
                         {att.name}
                       </a>
-                    ))}
-                  </div>
-                )}
-                <div className="flex items-center gap-2 mt-2">
-                  {!msg.read && (
-                    <Button size="sm" onClick={() => markAsRead(msg.id)}>
-                      Mark as Read
-                    </Button>
-                  )}
+                      <a
+                        href={att.url}
+                        download={att.name}
+                        className="ml-1"
+                        title="Download"
+                      >
+                        <Download className="w-4 h-4 text-black hover:text-blue-600" />
+                      </a>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
