@@ -6,53 +6,68 @@ import type { ChartType } from "chart.js";
 
 export default function ManagerDashboard() {
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [employeeCount, setEmployeeCount] = useState<number | null>(null);
+  const [customerCount, setCustomerCount] = useState<number | null>(null);
+  const [serviceCount, setServiceCount] = useState<number | null>(null);
+  const [revenue, setRevenue] = useState<number | null>(null);
+  const [stats, setStats] = useState<any>(null);
   const chartRefs = Array.from({ length: 2 }, () => useRef<HTMLCanvasElement>(null));
 
   useEffect(() => {
-    async function fetchStats() {
+    async function fetchAllStats() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/estimator/statistics");
-        if (!res.ok) throw new Error("Failed to fetch dashboard data");
-        const data = await res.json();
-        setStats(data);
+        // Employees
+        const empRes = await fetch("/api/employees");
+        const empData = await empRes.json();
+        setEmployeeCount(empData?.employees?.length ?? 0);
+        // Customers
+        const custRes = await fetch("/api/users");
+        const custData = await custRes.json();
+        setCustomerCount(custData?.customers?.length ?? 0);
+        // Services
+        const servRes = await fetch("/api/cso/services/approved");
+        const servData = await servRes.json();
+        setServiceCount(Array.isArray(servData) ? servData.length : 0);
+        // Revenue (from estimator statistics)
+        const statRes = await fetch("/api/estimator/statistics");
+        const statData = await statRes.json();
+        setRevenue(statData?.totalRevenue ?? 0);
+        setStats(statData);
       } catch (err: any) {
         setError(err.message || "Unknown error");
       } finally {
         setLoading(false);
       }
     }
-    fetchStats();
+    fetchAllStats();
   }, []);
 
-  // Prepare stat cards (recommended for manager)
-  const statCards = stats
-    ? [
-        {
-          label: "Total Revenue",
-          value: `ETB ${stats.totalRevenue?.toLocaleString() ?? 0}`,
-          icon: "💰",
-        },
-        {
-          label: "Total Receipts",
-          value: stats.totalReceipts ?? 0,
-          icon: "🧾",
-        },
-        {
-          label: "Pending Estimations",
-          value: stats.pendingEstimations ?? 0,
-          icon: "⏳",
-        },
-        {
-          label: "Completed Estimations",
-          value: stats.completedEstimations ?? 0,
-          icon: "✅",
-        },
-      ]
-    : [];
+  // Stat cards for manager
+  const statCards = [
+    {
+      label: "Total Employees",
+      value: employeeCount !== null ? employeeCount : "-",
+      icon: "👷",
+    },
+    {
+      label: "Total Customers",
+      value: customerCount !== null ? customerCount : "-",
+      icon: "👥",
+    },
+    {
+      label: "Total Services",
+      value: serviceCount !== null ? serviceCount : "-",
+      icon: "🛠️",
+    },
+    {
+      label: "Total Revenue",
+      value: revenue !== null ? `ETB ${revenue.toLocaleString()}` : "-",
+      icon: "💰",
+    },
+  ];
 
   // Prepare chart configs (bar: revenue by category, line: completed estimations by category)
   useEffect(() => {
