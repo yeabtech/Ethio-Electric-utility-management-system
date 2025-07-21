@@ -9,12 +9,19 @@ import { Alert } from "@/components/ui/alert";
 import { useUploadThing } from "@/lib/uploadthing";
 import EmployeeInboxPage from "./inbox";
 import { useUser } from "@clerk/nextjs";
+import { Bell } from "lucide-react";
 
 interface Employee {
   id: string;
   name: string;
   email: string;
   role: string;
+}
+
+interface SidebarEntry {
+  employee: Employee;
+  lastMessageAt: string | null;
+  unread: boolean;
 }
 
 export default function ManagerNotificationPage() {
@@ -34,7 +41,7 @@ export default function ManagerNotificationPage() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { startUpload, isUploading } = useUploadThing("serviceDocuments");
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [sidebarEntries, setSidebarEntries] = useState<SidebarEntry[]>([]);
 
   // Get internal user ID from Clerk user ID
   useEffect(() => {
@@ -55,6 +62,47 @@ export default function ManagerNotificationPage() {
         if (data.success) setEmployees(data.employees);
       });
   }, []);
+
+  // Fetch inbox messages for sidebar (recent, unread)
+  useEffect(() => {
+    if (!internalUserId) return;
+    fetch(`/api/messages?inbox=1&userId=${internalUserId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.success) return;
+        // Build a map of employeeId -> { lastMessageAt, unread }
+        const map: Record<string, { lastMessageAt: string; unread: boolean }> = {};
+        for (const msg of data.messages) {
+          const senderId = msg.sender?.id;
+          if (senderId && senderId !== internalUserId) {
+            if (!map[senderId] || new Date(msg.sentAt) > new Date(map[senderId].lastMessageAt)) {
+              map[senderId] = { lastMessageAt: msg.sentAt, unread: !msg.read };
+            } else if (!msg.read) {
+              map[senderId].unread = true;
+            }
+          }
+        }
+        setSidebarEntries((prev) => {
+          // Merge with employees list
+          return employees.map((emp) => ({
+            employee: emp,
+            lastMessageAt: map[emp.id]?.lastMessageAt || null,
+            unread: map[emp.id]?.unread || false,
+          })).sort((a, b) => {
+            // Sort by lastMessageAt desc, then name
+            if (a.lastMessageAt && b.lastMessageAt) {
+              return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime();
+            } else if (a.lastMessageAt) {
+              return -1;
+            } else if (b.lastMessageAt) {
+              return 1;
+            } else {
+              return a.employee.name.localeCompare(b.employee.name);
+            }
+          });
+        });
+      });
+  }, [internalUserId, employees]);
 
   // Filter employees by search
   useEffect(() => {
@@ -133,6 +181,42 @@ export default function ManagerNotificationPage() {
         setFile(null);
         setFileUrl(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
+        // Refresh sidebar after sending
+        if (internalUserId) {
+          fetch(`/api/messages?inbox=1&userId=${internalUserId}`)
+            .then((res) => res.json())
+            .then((data) => {
+              if (!data.success) return;
+              const map: Record<string, { lastMessageAt: string; unread: boolean }> = {};
+              for (const msg of data.messages) {
+                const senderId = msg.sender?.id;
+                if (senderId && senderId !== internalUserId) {
+                  if (!map[senderId] || new Date(msg.sentAt) > new Date(map[senderId].lastMessageAt)) {
+                    map[senderId] = { lastMessageAt: msg.sentAt, unread: !msg.read };
+                  } else if (!msg.read) {
+                    map[senderId].unread = true;
+                  }
+                }
+              }
+              setSidebarEntries(
+                employees.map((emp) => ({
+                  employee: emp,
+                  lastMessageAt: map[emp.id]?.lastMessageAt || null,
+                  unread: map[emp.id]?.unread || false,
+                })).sort((a, b) => {
+                  if (a.lastMessageAt && b.lastMessageAt) {
+                    return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime();
+                  } else if (a.lastMessageAt) {
+                    return -1;
+                  } else if (b.lastMessageAt) {
+                    return 1;
+                  } else {
+                    return a.employee.name.localeCompare(b.employee.name);
+                  }
+                })
+              );
+            });
+        }
       } else {
         setError(data.error || "Failed to send message.");
       }
@@ -141,6 +225,16 @@ export default function ManagerNotificationPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSelectEmployee = (emp: Employee) => {
+    setSelectedEmployee(emp);
+    // Optionally, clear unread alert for this employee in sidebar
+    setSidebarEntries((prev) =>
+      prev.map((entry) =>
+        entry.employee.id === emp.id ? { ...entry, unread: false } : entry
+      )
+    );
   };
 
   return (
@@ -157,24 +251,33 @@ export default function ManagerNotificationPage() {
           />
         </div>
         <div className="flex-1 overflow-y-auto">
-          {filteredEmployees.length === 0 && (
+          {sidebarEntries.length === 0 && (
             <div className="p-4 text-gray-400 text-center">No employees found.</div>
           )}
-          {filteredEmployees.map((emp) => (
-            <div
-              key={emp.id}
-              className={`px-4 py-3 cursor-pointer flex items-center gap-2 hover:bg-blue-50 border-b border-gray-100 ${selectedEmployee?.id === emp.id ? "bg-blue-100" : ""}`}
-              onClick={() => setSelectedEmployee(emp)}
-            >
-              <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-lg font-bold text-blue-700">
-                {emp.name[0]}
+          {sidebarEntries
+            .filter((entry) =>
+              !search ||
+              entry.employee.name.toLowerCase().includes(search.toLowerCase()) ||
+              entry.employee.email.toLowerCase().includes(search.toLowerCase())
+            )
+            .map((entry) => (
+              <div
+                key={entry.employee.id}
+                className={`px-4 py-3 cursor-pointer flex items-center gap-2 hover:bg-blue-50 border-b border-gray-100 ${selectedEmployee?.id === entry.employee.id ? "bg-blue-100" : ""}`}
+                onClick={() => handleSelectEmployee(entry.employee)}
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-lg font-bold text-blue-700">
+                  {entry.employee.name[0]}
+                </div>
+                <div className="flex flex-col flex-1">
+                  <span className="font-semibold text-black">{entry.employee.name}</span>
+                  <span className="text-xs text-gray-500">{entry.employee.email}</span>
+                </div>
+                {entry.unread && (
+                  <Bell className="w-5 h-5 text-red-500" />
+                )}
               </div>
-              <div className="flex flex-col">
-                <span className="font-semibold text-black">{emp.name}</span>
-                <span className="text-xs text-gray-500">{emp.email}</span>
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
       {/* Chat panel */}

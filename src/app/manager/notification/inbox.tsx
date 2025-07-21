@@ -93,39 +93,49 @@ export default function EmployeeInboxPage({ employeeId }: EmployeeInboxPageProps
           ) : messages.length === 0 ? (
             <div className="text-gray-500">No messages{employeeId ? " with this employee." : " in your inbox."}</div>
           ) : (
-            messages.map((msg) => (
-              <div key={msg.id} className="border-b pb-3 mb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-black">
-                      {msg.subject || "(No Subject)"}
-                    </span>
-                    <span className="text-xs text-gray-400 ml-2">
-                      {new Date(msg.sentAt).toLocaleString()}
-                    </span>
-                    <Badge variant={msg.read ? "success" : "outline"}>
-                      {msg.read ? "Read" : "Unread"}
-                    </Badge>
+            messages.map((msg) => {
+              // Determine if this message was sent by the current user
+              const isSentByMe = msg.sender?.id === internalUserId;
+              return (
+                <div key={msg.id} className="border-b pb-3 mb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-black">
+                        {msg.subject || "(No Subject)"}
+                      </span>
+                      <span className="text-xs text-gray-400 ml-2">
+                        {new Date(msg.sentAt).toLocaleString()}
+                      </span>
+                      <Badge variant={msg.read ? "success" : "outline"}>
+                        {msg.read ? "Read" : "Unread"}
+                      </Badge>
+                      {/* Telegram-style checkmarks for sent messages */}
+                      {isSentByMe && (
+                        <span className="ml-2 text-blue-600 text-lg" title={msg.read ? "Seen" : "Sent"}>
+                          {msg.read ? "✓✓" : "✓"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-black text-sm">
+                      <span className="font-medium">From: </span>
+                      {msg.sender ? (
+                        <>
+                          <span className="text-black font-semibold">{msg.sender.name}</span>
+                          <span className="text-black ml-2">({msg.sender.email})</span>
+                        </>
+                      ) : (
+                        <span className="text-black">Unknown sender</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-black text-sm">
-                    <span className="font-medium">From: </span>
-                    {msg.sender ? (
-                      <>
-                        <span className="text-black font-semibold">{msg.sender.name}</span>
-                        <span className="text-black ml-2">({msg.sender.email})</span>
-                      </>
-                    ) : (
-                      <span className="text-black">Unknown sender</span>
-                    )}
+                  <div className="flex-shrink-0">
+                    <Button size="sm" onClick={() => handleOpen(msg)}>
+                      Open
+                    </Button>
                   </div>
                 </div>
-                <div className="flex-shrink-0">
-                  <Button size="sm" onClick={() => handleOpen(msg)}>
-                    Open
-                  </Button>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </CardContent>
       </Card>
