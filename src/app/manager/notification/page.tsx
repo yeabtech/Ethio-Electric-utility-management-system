@@ -19,6 +19,9 @@ interface Employee {
 
 export default function ManagerNotificationPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [search, setSearch] = useState("");
+  const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -29,6 +32,7 @@ export default function ManagerNotificationPage() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { startUpload, isUploading } = useUploadThing("serviceDocuments");
+  const [showDropdown, setShowDropdown] = useState(false);
 
   // Fetch employees
   useEffect(() => {
@@ -38,6 +42,21 @@ export default function ManagerNotificationPage() {
         if (data.success) setEmployees(data.employees);
       });
   }, []);
+
+  // Filter employees by search
+  useEffect(() => {
+    if (!search) {
+      setFilteredEmployees([]);
+      return;
+    }
+    setFilteredEmployees(
+      employees.filter(
+        (e) =>
+          e.name.toLowerCase().includes(search.toLowerCase()) ||
+          e.email.toLowerCase().includes(search.toLowerCase())
+      )
+    );
+  }, [search, employees]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -62,6 +81,10 @@ export default function ManagerNotificationPage() {
   };
 
   const handleSend = async () => {
+    if (!selectedEmployee) {
+      setError("Please select a recipient.");
+      return;
+    }
     if (!content.trim()) {
       setError("Message content is required.");
       return;
@@ -76,7 +99,7 @@ export default function ManagerNotificationPage() {
       const body = {
         content,
         subject,
-        recipients: employees.map((e) => e.id),
+        recipients: [selectedEmployee.id],
         attachments: fileUrl ? [{ url: fileUrl, name: file?.name }] : [],
       };
       const res = await fetch("/api/messages", {
@@ -86,11 +109,13 @@ export default function ManagerNotificationPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        toast({ title: "Message sent", description: "Your message was sent to all employees." });
+        toast({ title: "Message sent", description: `Your message was sent to ${selectedEmployee.name}.` });
         setContent("");
         setSubject("");
         setFile(null);
         setFileUrl(null);
+        setSelectedEmployee(null);
+        setSearch("");
         if (fileInputRef.current) fileInputRef.current.value = "";
       } else {
         setError(data.error || "Failed to send message.");
@@ -109,15 +134,58 @@ export default function ManagerNotificationPage() {
         <div className="flex-1 min-w-0">
           <Card>
             <CardHeader>
-              <CardTitle>Send Message to Employees</CardTitle>
+              <CardTitle>Send Message to Employee</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {error && <Alert variant="error">{error}</Alert>}
+              {/* Recipient selection */}
+              <div className="mb-2">
+                <label className="block text-sm font-medium mb-1 text-black">Recipient</label>
+                {selectedEmployee ? (
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-semibold text-black">{selectedEmployee.name} ({selectedEmployee.email})</span>
+                    <Button size="sm" variant="outline" onClick={() => setSelectedEmployee(null)}>
+                      Change
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <Input
+                      placeholder="Search employee by name or email..."
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setShowDropdown(true);
+                      }}
+                      onFocus={() => setShowDropdown(true)}
+                      autoComplete="off"
+                    />
+                    {showDropdown && filteredEmployees.length > 0 && (
+                      <div className="absolute z-10 bg-white border border-gray-200 rounded-md shadow-lg mt-1 w-full max-h-56 overflow-y-auto">
+                        {filteredEmployees.map((emp) => (
+                          <div
+                            key={emp.id}
+                            className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
+                            onClick={() => {
+                              setSelectedEmployee(emp);
+                              setShowDropdown(false);
+                              setSearch("");
+                            }}
+                          >
+                            {emp.name} <span className="text-xs text-gray-500">({emp.email})</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               <Input
                 placeholder="Subject (optional)"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 className="mb-2"
+                disabled={!selectedEmployee}
               />
               <Textarea
                 placeholder="Type your message..."
@@ -125,6 +193,7 @@ export default function ManagerNotificationPage() {
                 onChange={(e) => setContent(e.target.value)}
                 rows={4}
                 className="mb-2"
+                disabled={!selectedEmployee}
               />
               <div className="flex items-center gap-2">
                 <input
@@ -132,7 +201,7 @@ export default function ManagerNotificationPage() {
                   ref={fileInputRef}
                   onChange={handleFileChange}
                   className="block"
-                  disabled={uploading || isUploading}
+                  disabled={uploading || isUploading || !selectedEmployee}
                 />
                 {file && (
                   <span className="text-sm text-gray-700">
@@ -142,8 +211,8 @@ export default function ManagerNotificationPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSend} disabled={loading || uploading || isUploading}>
-                {loading ? "Sending..." : "Send to All Employees"}
+              <Button onClick={handleSend} disabled={loading || uploading || isUploading || !selectedEmployee}>
+                {loading ? "Sending..." : "Send Message"}
               </Button>
             </CardFooter>
           </Card>
