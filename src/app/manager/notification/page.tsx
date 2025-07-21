@@ -147,7 +147,7 @@ export default function ManagerNotificationPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[var(--background)] flex items-center justify-center py-8">
+    <div className="min-h-screen w-full flex items-center justify-center py-8">
       <div className="max-w-6xl w-full bg-white rounded-2xl shadow-lg p-8">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Send Message UI */}
