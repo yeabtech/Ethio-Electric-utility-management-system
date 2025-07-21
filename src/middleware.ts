@@ -48,7 +48,11 @@ const isPublicRoute = createRouteMatcher([
   "/api/estimator/statistics/(.*)",
   "/api/report/templates",
   "/api/get-clerk-user",
-  "/api/customer-verficationS-all"
+  "/api/customer-verficationS-all",
+  // Clerk management APIs (security logs, user/session management)
+  "/api/clerk/logs",
+  "/api/clerk/update-role",
+  "/api/clerk/revoke-session",
 
   
   
