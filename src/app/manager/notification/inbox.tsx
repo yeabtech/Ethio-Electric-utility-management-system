@@ -1,10 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/components/ui/use-toast";
+import { useEffect, useState, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Download } from "lucide-react";
 
@@ -28,8 +24,7 @@ export default function EmployeeInboxPage({ employeeId }: EmployeeInboxPageProps
   const [internalUserId, setInternalUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openMessage, setOpenMessage] = useState<Message | null>(null);
-  const { toast } = useToast();
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Get internal user ID from Clerk user ID
   useEffect(() => {
@@ -58,147 +53,81 @@ export default function EmployeeInboxPage({ employeeId }: EmployeeInboxPageProps
       .finally(() => setLoading(false));
   }, [internalUserId, employeeId]);
 
-  const markAsRead = async (id: string) => {
-    try {
-      const res = await fetch(`/api/messages/${id}/read`, { method: "PATCH" });
-      if (res.ok) {
-        setMessages((prev) =>
-          prev.map((msg) => (msg.id === id ? { ...msg, read: true } : msg))
-        );
-        toast({ title: "Marked as read" });
-      }
-    } catch {
-      toast({ title: "Failed to mark as read", description: "Try again later." });
-    }
-  };
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  const handleOpen = async (msg: Message) => {
-    setOpenMessage(msg);
-    if (!msg.read) {
-      await markAsRead(msg.id);
-    }
-  };
+  if (loading) {
+    return <div className="text-gray-500 text-center py-8">Loading...</div>;
+  }
 
-  const handleCloseModal = () => setOpenMessage(null);
+  if (messages.length === 0) {
+    return <div className="text-gray-400 text-center py-8">No messages{employeeId ? " with this employee." : " in your inbox."}</div>;
+  }
 
   return (
-    <div className="max-w-3xl mx-auto py-8 space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>{employeeId ? "Direct Messages" : "Inbox"}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
-          {loading ? (
-            <div className="text-gray-500">Loading...</div>
-          ) : messages.length === 0 ? (
-            <div className="text-gray-500">No messages{employeeId ? " with this employee." : " in your inbox."}</div>
-          ) : (
-            messages.map((msg) => {
-              // Determine if this message was sent by the current user
-              const isSentByMe = msg.sender?.id === internalUserId;
-              return (
-                <div key={msg.id} className="border-b pb-3 mb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-black">
-                        {msg.subject || "(No Subject)"}
-                      </span>
-                      <span className="text-xs text-gray-400 ml-2">
-                        {new Date(msg.sentAt).toLocaleString()}
-                      </span>
-                      <Badge variant={msg.read ? "success" : "outline"}>
-                        {msg.read ? "Read" : "Unread"}
-                      </Badge>
-                      {/* Telegram-style checkmarks for sent messages */}
-                      {isSentByMe && (
-                        <span className="ml-2 text-blue-600 text-lg" title={msg.read ? "Seen" : "Sent"}>
-                          {msg.read ? "✓✓" : "✓"}
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-black text-sm">
-                      <span className="font-medium">From: </span>
-                      {msg.sender ? (
-                        <>
-                          <span className="text-black font-semibold">{msg.sender.name}</span>
-                          <span className="text-black ml-2">({msg.sender.email})</span>
-                        </>
-                      ) : (
-                        <span className="text-black">Unknown sender</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <Button size="sm" onClick={() => handleOpen(msg)}>
-                      Open
-                    </Button>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Modal for message content */}
-      {openMessage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 relative">
-            <button
-              className="absolute top-2 right-2 text-black text-xl font-bold"
-              onClick={handleCloseModal}
-              aria-label="Close"
+    <div className="flex flex-col gap-2 h-full">
+      <div className="flex-1 overflow-y-auto px-2 py-2">
+        {messages.map((msg) => {
+          const isSentByMe = msg.sender?.id === internalUserId;
+          return (
+            <div
+              key={msg.id}
+              className={`flex mb-2 ${isSentByMe ? "justify-end" : "justify-start"}`}
             >
-              ×
-            </button>
-            <div className="mb-2">
-              <span className="font-semibold text-black">Subject: </span>
-              <span className="text-black">{openMessage.subject || "(No Subject)"}</span>
-            </div>
-            <div className="mb-2">
-              <span className="font-semibold text-black">From: </span>
-              {openMessage.sender ? (
-                <>
-                  <span className="text-black font-semibold">{openMessage.sender.name}</span>
-                  <span className="text-black ml-2">({openMessage.sender.email})</span>
-                </>
-              ) : (
-                <span className="text-black">Unknown sender</span>
+              {/* Avatar on left for received, right for sent */}
+              {!isSentByMe && (
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-200 flex items-center justify-center text-lg font-bold text-blue-700 mr-2">
+                  {msg.sender?.name ? msg.sender.name[0] : "?"}
+                </div>
               )}
-            </div>
-            <div className="mb-4 text-black whitespace-pre-line">
-              {openMessage.content}
-            </div>
-            {openMessage.attachments && openMessage.attachments.length > 0 && (
-              <div className="mb-2">
-                <span className="font-semibold text-black">Attachments:</span>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {openMessage.attachments.map((att) => (
-                    <div key={att.url} className="flex items-center gap-1">
-                      <a
-                        href={att.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline text-blue-600 text-xs"
-                      >
-                        {att.name}
-                      </a>
-                      <a
-                        href={att.url}
-                        download={att.name}
-                        className="ml-1"
-                        title="Download"
-                      >
-                        <Download className="w-4 h-4 text-black hover:text-blue-600" />
-                      </a>
+              <div className={`max-w-[70%] flex flex-col ${isSentByMe ? "items-end" : "items-start"}`}>
+                <div
+                  className={`rounded-2xl px-4 py-2 shadow-sm text-sm whitespace-pre-line break-words ${
+                    isSentByMe
+                      ? "bg-blue-500 text-white rounded-br-md"
+                      : "bg-gray-200 text-black rounded-bl-md"
+                  }`}
+                >
+                  {msg.content}
+                  {msg.attachments && msg.attachments.length > 0 && (
+                    <div className="mt-2 flex flex-col gap-1">
+                      {msg.attachments.map((att) => (
+                        <a
+                          key={att.url}
+                          href={att.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline text-xs text-blue-100 hover:text-blue-300"
+                        >
+                          {att.name}
+                          <Download className="inline w-4 h-4 ml-1" />
+                        </a>
+                      ))}
                     </div>
-                  ))}
+                  )}
+                </div>
+                <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                  <span>{new Date(msg.sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                  {/* Telegram-style checkmarks for sent messages */}
+                  {isSentByMe && (
+                    <span className={`ml-1 text-lg ${msg.read ? "text-blue-300" : "text-blue-600"}`} title={msg.read ? "Seen" : "Sent"}>
+                      {msg.read ? "✓✓" : "✓"}
+                    </span>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-      )}
+              {isSentByMe && (
+                <div className="flex-shrink-0 w-9 h-9 rounded-full bg-green-200 flex items-center justify-center text-lg font-bold text-green-700 ml-2">
+                  {user?.firstName ? user.firstName[0] : "M"}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        <div ref={chatEndRef} />
+      </div>
     </div>
   );
 } 
