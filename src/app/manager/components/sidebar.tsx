@@ -12,8 +12,8 @@ const menuItems = [
   { label: 'Employees', icon: Users, color: '#45B7D1' },
   { label: 'Register Employee', icon: UserPlus, color: '#FF6B6B' },
   { label: 'Users Account', icon: UserCog, color: '#96CEB4' },
-  { label: 'System Security', icon: FileText, color: '#FFD93D' },
-  { label: 'Report Templates', icon: Building2, color: '#6C5CE7' },
+  
+  { label: 'Report Templates', icon: FileText, color: '#6C5CE7' },
   { label: 'News', icon: Newspaper, color: '#FF8B94' },
   { label: 'Analytics', icon: BarChart2, color: '#FF8B94' },
   { label: 'Notifications', icon: Bell, color: '#FF9F1C' },
