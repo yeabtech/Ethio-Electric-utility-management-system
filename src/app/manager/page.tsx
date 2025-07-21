@@ -92,14 +92,14 @@ export default function ManagerPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative" style={{ backgroundImage: 'url(/bg.png)', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}>
+    <div className="min-h-screen flex flex-col relative" style={{ backgroundImage: 'url(/bg.png)', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundColor: 'transparent' }}>
       {/* Static Header */}
       
       <div className="flex flex-1 w-full">
         {/* Sidebar */}
         <Sidebar onPageChange={setActivePage} />
         {/* Main Content */}
-        <div className="flex-1 p-12 ml-72 relative overflow-hidden">
+        <div className="flex-1 p-12 ml-72 relative overflow-hidden" style={{ background: 'transparent' }}>
           {renderContent()}
         </div>
       </div>
