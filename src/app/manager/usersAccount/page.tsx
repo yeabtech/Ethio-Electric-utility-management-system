@@ -399,41 +399,40 @@ export default function UsersAccountPage() {
 
   // Main table view
   return (
-    <div className="container mx-auto py-6 px-4 bg-white min-h-screen">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-black">All Customers</h1>
-        <div className="w-full md:w-1/3">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-800" />
-            </div>
-            <label htmlFor="customer-search" className="sr-only text-black">Search</label>
-            <input
-              id="customer-search"
-              type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-600 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
-              placeholder="Search by name or email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+    <div className="bg-white rounded-lg shadow-md p-6 min-h-screen">
+      <h2 className="text-2xl font-semibold mb-6 text-black">All Customers</h2>
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-800" />
           </div>
+          <label htmlFor="customer-search" className="sr-only text-black">Search</label>
+          <input
+            id="customer-search"
+            type="text"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-600 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
+            placeholder="Search by name or email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
       </div>
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
         </div>
       ) : filteredCustomers.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="bg-gray-100 p-4 rounded-lg text-center text-black">
           <h3 className="text-lg font-semibold text-black">
             No customers found
           </h3>
-          <p className="mt-2 text-sm text-gray-700">
+          <p className="mt-2 text-sm text-black">
             Try adjusting your search or check back later.
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow">
+        <div className="overflow-x-auto min-w-full divide-y divide-gray-200">
           <DataTable columns={columns} data={filteredCustomers} />
         </div>
       )}
