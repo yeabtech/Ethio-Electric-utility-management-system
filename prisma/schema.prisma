@@ -29,6 +29,9 @@ model User {
   assignedReports   Report[]               @relation("AssignedReports")
   reportComments    ReportComment[]
   reportAccess      ReportAccess[]
+  // Messaging relations
+  messagesSent      Message[]
+  messagesReceived  MessageRecipient[]
 }
 
 model CustomerVerification {
@@ -355,4 +358,37 @@ enum ReportCategory {
   inventory
   hr
   other
+}
+
+// ===== EMPLOYEE COMMUNICATION (MESSAGING) =====
+model Message {
+  id          String             @id @default(cuid())
+  senderId    String
+  sender      User               @relation(fields: [senderId], references: [id])
+  subject     String?
+  content     String
+  sentAt      DateTime           @default(now())
+  attachments MessageAttachment[]
+  recipients  MessageRecipient[]
+}
+
+model MessageAttachment {
+  id         String   @id @default(cuid())
+  messageId  String
+  message    Message  @relation(fields: [messageId], references: [id])
+  url        String   // File storage path
+  name       String
+  type       String   // e.g. "application/pdf"
+  size       Int      // Bytes
+  uploadedAt DateTime @default(now())
+}
+
+model MessageRecipient {
+  id          String   @id @default(cuid())
+  messageId   String
+  message     Message  @relation(fields: [messageId], references: [id])
+  recipientId String
+  recipient   User     @relation(fields: [recipientId], references: [id])
+  read        Boolean  @default(false)
+  readAt      DateTime?
 }
