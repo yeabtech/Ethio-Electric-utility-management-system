@@ -13,9 +13,13 @@ export default function ManagerPage() {
     switch (activePage) {
       case 'Dashboard':
         return (
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-2xl text-black font-semibold mb-4">Manager Dashboard</h2>
-            <p className='text-black'>Welcome to your Manager dashboard</p>
+          <div className="absolute inset-0 w-full h-full">
+            <iframe 
+              src="/manager/dashboard" 
+              className="w-full h-full border-0" 
+              title="Manager Dashboard"
+              style={{ overflow: 'hidden' }}
+            />
           </div>
         );
       case 'Register Employee':

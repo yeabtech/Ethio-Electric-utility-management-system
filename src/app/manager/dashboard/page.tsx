@@ -192,93 +192,86 @@ export default function ManagerDashboard() {
   }, []);
 
   return (
-    <div className="p-6 space-y-8">
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {statData.map((stat, i) => (
-          <Card key={i} className="border shadow-md">
-            <CardContent className="flex flex-col items-start py-6">
-              <span className="text-2xl font-bold mb-1">{stat.value}</span>
-              <span className="text-xs text-gray-500 mb-2">{stat.label}</span>
-              <span className="text-3xl">{stat.icon}</span>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+    <div
+      className="min-h-screen flex items-start justify-center"
+      style={{
+        backgroundImage: 'url(/bg.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      <div className="flex-1 p-6 space-y-8 ml-0 md:ml-0">
+        {/* Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {statData.map((stat, i) => (
+            <Card key={i} className="border shadow-md">
+              <CardContent className="flex flex-col items-start py-6">
+                <span className="text-2xl font-bold mb-1 text-black">{stat.value}</span>
+                <span className="text-xs text-black mb-2">{stat.label}</span>
+                <span className="text-3xl text-black">{stat.icon}</span>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-      {/* Graphs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {chartConfigs.slice(0, 2).map((cfg, i) => (
-          <Card key={i} className="border shadow-md">
-            <CardHeader>
-              <CardTitle>{cfg.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <canvas ref={cfg.ref} height={180}></canvas>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+        {/* Graphs Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {chartConfigs.slice(0, 2).map((cfg, i) => (
+            <Card key={i} className="border shadow-md">
+              <CardHeader>
+                <CardTitle>{cfg.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <canvas ref={cfg.ref} height={180}></canvas>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Donut, Bar, Donut */}
-        {chartConfigs.slice(2, 5).map((cfg, i) => (
-          <Card key={i} className="border shadow-md">
-            <CardHeader>
-              <CardTitle>{cfg.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="relative">
-              <canvas ref={cfg.ref} height={180}></canvas>
-              {cfg.centerText && (
-                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-bold text-gray-700 pointer-events-none">
-                  {cfg.centerText}
+        {/* Removed the cards below the line chart (chartConfigs.slice(2, 5)) */}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {chartConfigs.slice(5, 7).map((cfg, i) => (
+            <Card key={i} className="border shadow-md">
+              <CardHeader>
+                <CardTitle>{cfg.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <canvas ref={cfg.ref} height={180}></canvas>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Gauges */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {gaugeData.map((g, i) => (
+            <Card key={i} className="border shadow-md flex flex-col items-center justify-center py-8">
+              <div className="relative w-24 h-24 flex items-center justify-center mb-2">
+                <svg width="96" height="96">
+                  <circle cx="48" cy="48" r="40" stroke="#e5e7eb" strokeWidth="10" fill="none" />
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="40"
+                    stroke={g.color}
+                    strokeWidth="10"
+                    fill="none"
+                    strokeDasharray={2 * Math.PI * 40}
+                    strokeDashoffset={2 * Math.PI * 40 * (1 - g.value / 68000)}
+                    strokeLinecap="round"
+                    transform="rotate(-90 48 48)"
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-xl font-bold text-black">
+                  {g.value >= 1000 ? `${Math.round(g.value / 1000)}K` : g.value}
                 </span>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {chartConfigs.slice(5, 7).map((cfg, i) => (
-          <Card key={i} className="border shadow-md">
-            <CardHeader>
-              <CardTitle>{cfg.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <canvas ref={cfg.ref} height={180}></canvas>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Gauges */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {gaugeData.map((g, i) => (
-          <Card key={i} className="border shadow-md flex flex-col items-center justify-center py-8">
-            <div className="relative w-24 h-24 flex items-center justify-center mb-2">
-              <svg width="96" height="96">
-                <circle cx="48" cy="48" r="40" stroke="#e5e7eb" strokeWidth="10" fill="none" />
-                <circle
-                  cx="48"
-                  cy="48"
-                  r="40"
-                  stroke={g.color}
-                  strokeWidth="10"
-                  fill="none"
-                  strokeDasharray={2 * Math.PI * 40}
-                  strokeDashoffset={2 * Math.PI * 40 * (1 - g.value / 68000)}
-                  strokeLinecap="round"
-                  transform="rotate(-90 48 48)"
-                />
-              </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-xl font-bold text-gray-700">
-                {g.value >= 1000 ? `${Math.round(g.value / 1000)}K` : g.value}
-              </span>
-            </div>
-            <span className="text-sm text-gray-500">{g.label}</span>
-          </Card>
-        ))}
+              </div>
+              <span className="text-sm text-black">{g.label}</span>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
