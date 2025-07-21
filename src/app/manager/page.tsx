@@ -73,9 +73,7 @@ export default function ManagerPage() {
     <div className="min-h-screen flex flex-col relative" style={{ backgroundImage: 'url(/bg.png)', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}>
       {/* Static Header */}
       <div className="w-full flex justify-center items-center py-6 z-20">
-        <div className="bg-white rounded-xl shadow-md px-8 py-4 flex justify-center items-center">
-          <h1 className="text-3xl font-extrabold text-black text-center">Manager Dashboard</h1>
-        </div>
+        <h1 className="text-3xl font-extrabold text-black text-center">Manager Dashboard</h1>
       </div>
       <div className="flex flex-1 w-full">
         {/* Sidebar */}
