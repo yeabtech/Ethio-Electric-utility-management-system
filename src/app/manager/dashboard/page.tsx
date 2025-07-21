@@ -23,10 +23,10 @@ export default function ManagerDashboard() {
         const empRes = await fetch("/api/employees");
         const empData = await empRes.json();
         setEmployeeCount(empData?.employees?.length ?? 0);
-        // Customers
-        const custRes = await fetch("/api/users");
+        // Customers (fetch all approved customers, not location-based)
+        const custRes = await fetch("/api/customer-verifications-all");
         const custData = await custRes.json();
-        setCustomerCount(custData?.customers?.length ?? 0);
+        setCustomerCount(Array.isArray(custData) ? custData.length : 0);
         // Services
         const servRes = await fetch("/api/cso/services/approved");
         const servData = await servRes.json();
