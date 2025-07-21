@@ -33,7 +33,7 @@ export default function ManagerPage() {
             />
           </div>
         );
-      case 'Office Management':
+      case 'Report Templates':
         return (
           <div className="absolute inset-0 w-full h-full">
             <iframe 
@@ -42,6 +42,17 @@ export default function ManagerPage() {
               title="Office Management"
               style={{ overflow: 'hidden' }}
              
+            />
+          </div>
+        );
+      case 'Analytics':
+        return (
+          <div className="absolute inset-0 w-full h-full">
+            <iframe 
+              src="/manager/analytics" 
+              className="w-full h-full border-0" 
+              title="Analytics"
+              style={{ overflow: 'hidden' }}
             />
           </div>
         );

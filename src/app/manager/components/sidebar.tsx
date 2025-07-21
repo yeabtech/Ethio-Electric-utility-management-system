@@ -17,8 +17,7 @@ const menuItems = [
   { label: 'News', icon: Newspaper, color: '#FF8B94' },
   { label: 'Analytics', icon: BarChart2, color: '#FF8B94' },
   { label: 'Notifications', icon: Bell, color: '#FF9F1C' },
-  { label: 'Support', icon: LifeBuoy, color: '#00B4D8' },
-  { label: 'Settings', icon: Settings, color: '#7209B7' }
+  
 ]
 
 interface SidebarProps {
