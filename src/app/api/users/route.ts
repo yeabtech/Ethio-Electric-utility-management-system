@@ -4,6 +4,18 @@ import { currentUser } from '@clerk/nextjs/server';
 
 export async function GET(request: Request) {
   try {
+    const url = new URL(request.url);
+    const clerkUserId = url.searchParams.get('clerkUserId');
+    if (clerkUserId) {
+      // Lookup by Clerk user ID
+      const user = await prisma.user.findUnique({ where: { clerkUserId } });
+      if (!user) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      }
+      return NextResponse.json({ id: user.id, email: user.email, role: user.role });
+    }
+
+    // Default: get current user and their customers (legacy logic)
     const user = await currentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
