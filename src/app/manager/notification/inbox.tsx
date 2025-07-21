@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
+import { useUser } from "@clerk/nextjs";
 
 interface Message {
   id: string;
@@ -17,18 +18,34 @@ interface Message {
 }
 
 export default function EmployeeInboxPage() {
+  const { user } = useUser();
+  const [internalUserId, setInternalUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Get internal user ID from Clerk user ID
   useEffect(() => {
-    fetch("/api/messages?inbox=1")
+    if (user?.id) {
+      fetch(`/api/users?clerkUserId=${user.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.id) setInternalUserId(data.id);
+        });
+    }
+  }, [user]);
+
+  // Fetch inbox messages for this user
+  useEffect(() => {
+    if (!internalUserId) return;
+    setLoading(true);
+    fetch(`/api/messages?inbox=1&userId=${internalUserId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setMessages(data.messages);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [internalUserId]);
 
   const markAsRead = async (id: string) => {
     try {

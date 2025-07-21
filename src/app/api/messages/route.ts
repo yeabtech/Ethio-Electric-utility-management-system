@@ -51,8 +51,12 @@ export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const isInbox = url.searchParams.get('inbox') === '1';
-    const userId = await getCurrentUserId();
+    const userIdParam = url.searchParams.get('userId');
+    let userId = userIdParam;
     if (isInbox) {
+      if (!userId || typeof userId !== 'string') {
+        return NextResponse.json({ success: false, error: 'Missing userId for inbox.' }, { status: 400 });
+      }
       // Fetch messages received by the current user
       const recips = await prisma.messageRecipient.findMany({
         where: { recipientId: userId },
@@ -71,12 +75,17 @@ export async function GET(req: NextRequest) {
         subject: r.message.subject,
         content: r.message.content,
         sentAt: r.message.sentAt,
-        attachments: r.message.attachments.map((a) => ({ name: a.name, url: a.url })),
+        attachments: Array.isArray(r.message.attachments)
+          ? r.message.attachments.map((a) => ({ name: a.name, url: a.url }))
+          : [],
         sender: r.message.sender ? { name: r.message.sender.email, email: r.message.sender.email } : undefined,
         read: r.read,
       }));
       return NextResponse.json({ success: true, messages });
     } else {
+      if (!userId || typeof userId !== 'string') {
+        return NextResponse.json({ success: false, error: 'Missing userId for sent messages.' }, { status: 400 });
+      }
       // Sent messages (as before)
       const senderId = userId;
       const messages = await prisma.message.findMany({
@@ -97,12 +106,16 @@ export async function GET(req: NextRequest) {
         subject: msg.subject,
         content: msg.content,
         sentAt: msg.sentAt,
-        attachments: msg.attachments.map((a) => ({ name: a.name, url: a.url })),
-        recipients: msg.recipients.map((r) => ({
-          id: r.recipientId,
-          name: r.recipient?.email || r.recipientId,
-          read: r.read,
-        })),
+        attachments: Array.isArray(msg.attachments)
+          ? msg.attachments.map((a) => ({ name: a.name, url: a.url }))
+          : [],
+        recipients: Array.isArray(msg.recipients)
+          ? msg.recipients.map((r) => ({
+              id: r.recipientId,
+              name: r.recipient?.email || r.recipientId,
+              read: r.read,
+            }))
+          : [],
       }));
       return NextResponse.json({ success: true, messages: formatted });
     }
