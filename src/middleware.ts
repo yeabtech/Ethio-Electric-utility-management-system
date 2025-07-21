@@ -53,6 +53,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/clerk/logs",
   "/api/clerk/update-role",
   "/api/clerk/revoke-session",
+  "/api/messages"
 
   
   
