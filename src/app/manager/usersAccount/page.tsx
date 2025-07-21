@@ -223,7 +223,7 @@ export default function UsersAccountPage() {
   if (selectedCustomer) {
     const c = selectedCustomer;
     return (
-      <div className="container mx-auto p-4 space-y-6">
+      <div className="container mx-auto p-4 space-y-6 bg-white min-h-screen">
         <div className="sticky top-0 bg-white z-10 pb-4">
           <Button
             variant="secondary"
@@ -234,7 +234,7 @@ export default function UsersAccountPage() {
           </Button>
         </div>
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Customer Details</h1>
+          <h1 className="text-2xl font-bold text-black">Customer Details</h1>
           <div className="space-x-2">
             <Badge
               variant={
@@ -251,11 +251,11 @@ export default function UsersAccountPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Personal Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
+          <Card className="bg-white">
+            <CardHeader className="bg-white">
+              <CardTitle className="text-black">Personal Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 bg-white">
               <div className="flex items-center space-x-4">
                 <img
                   src={c.personalPhoto || c.user.imageUrl || "/logo.png"}
@@ -263,98 +263,98 @@ export default function UsersAccountPage() {
                   className="w-16 h-16 rounded-full"
                 />
                 <div>
-                  <p className="font-medium">
+                  <p className="font-medium text-black">
                     {c.firstName} {c.lastName}
                   </p>
-                  <p className="text-sm text-gray-500">{c.user.email}</p>
+                  <p className="text-sm text-gray-700">{c.user.email}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">First Name</p>
-                  <p>{c.firstName}</p>
+                  <label className="text-sm text-black font-semibold">First Name</label>
+                  <p className="text-black">{c.firstName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Last Name</p>
-                  <p>{c.lastName}</p>
+                  <label className="text-sm text-black font-semibold">Last Name</label>
+                  <p className="text-black">{c.lastName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Gender</p>
-                  <p>{c.gender}</p>
+                  <label className="text-sm text-black font-semibold">Gender</label>
+                  <p className="text-black">{c.gender}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Date of Birth</p>
-                  <p>{c.dateOfBirth ? new Date(c.dateOfBirth).toLocaleDateString() : "-"}</p>
+                  <label className="text-sm text-black font-semibold">Date of Birth</label>
+                  <p className="text-black">{c.dateOfBirth ? new Date(c.dateOfBirth).toLocaleDateString() : "-"}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           {/* Identity Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Identity Information</CardTitle>
+          <Card className="bg-white">
+            <CardHeader className="bg-white">
+              <CardTitle className="text-black">Identity Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 bg-white">
               <div>
-                <p className="text-sm text-gray-500">Mobile Number</p>
-                <p>{c.mobileNumber}</p>
+                <label className="text-sm text-black font-semibold">Mobile Number</label>
+                <p className="text-black">{c.mobileNumber}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">ID Type</p>
-                  <p>{c.idType?.replace("_", " ").toUpperCase()}</p>
+                  <label className="text-sm text-black font-semibold">ID Type</label>
+                  <p className="text-black">{c.idType?.replace("_", " ").toUpperCase()}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">ID Number</p>
-                  <p>{c.idNumber}</p>
+                  <label className="text-sm text-black font-semibold">ID Number</label>
+                  <p className="text-black">{c.idNumber}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           {/* Address Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Address Information</CardTitle>
+          <Card className="bg-white">
+            <CardHeader className="bg-white">
+              <CardTitle className="text-black">Address Information</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 bg-white">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">Region</p>
-                  <p>{c.region}</p>
+                  <label className="text-sm text-black font-semibold">Region</label>
+                  <p className="text-black">{c.region}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Sub City</p>
-                  <p>{c.subCity}</p>
+                  <label className="text-sm text-black font-semibold">Sub City</label>
+                  <p className="text-black">{c.subCity}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Woreda</p>
-                  <p>{c.woreda}</p>
+                  <label className="text-sm text-black font-semibold">Woreda</label>
+                  <p className="text-black">{c.woreda}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Kebele</p>
-                  <p>{c.kebele}</p>
+                  <label className="text-sm text-black font-semibold">Kebele</label>
+                  <p className="text-black">{c.kebele}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Home Number</p>
-                  <p>{c.homeNumber}</p>
+                  <label className="text-sm text-black font-semibold">Home Number</label>
+                  <p className="text-black">{c.homeNumber}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Nationality</p>
-                  <p>{c.nationality}</p>
+                  <label className="text-sm text-black font-semibold">Nationality</label>
+                  <p className="text-black">{c.nationality}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
         {/* Document Images */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Document Images</CardTitle>
+        <Card className="bg-white">
+          <CardHeader className="bg-white">
+            <CardTitle className="text-black">Document Images</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-white">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <p className="text-sm text-gray-500 mb-2">Personal Photo</p>
+                <label className="text-sm text-black font-semibold mb-2 block">Personal Photo</label>
                 <img
                   src={c.personalPhoto}
                   alt="Personal Photo"
@@ -362,7 +362,7 @@ export default function UsersAccountPage() {
                 />
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-2">ID Photo (Front)</p>
+                <label className="text-sm text-black font-semibold mb-2 block">ID Photo (Front)</label>
                 <img
                   src={c.idPhotoFront}
                   alt="ID Photo Front"
@@ -371,7 +371,7 @@ export default function UsersAccountPage() {
               </div>
               {c.idPhotoBack && (
                 <div>
-                  <p className="text-sm text-gray-500 mb-2">ID Photo (Back)</p>
+                  <label className="text-sm text-black font-semibold mb-2 block">ID Photo (Back)</label>
                   <img
                     src={c.idPhotoBack}
                     alt="ID Photo Back"
@@ -384,11 +384,11 @@ export default function UsersAccountPage() {
         </Card>
         {/* Rejection Reason */}
         {c.status === "rejected" && c.rejectionReason && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Rejection Reason</CardTitle>
+          <Card className="bg-white">
+            <CardHeader className="bg-white">
+              <CardTitle className="text-black">Rejection Reason</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="bg-white">
               <p className="text-red-600 font-semibold">{c.rejectionReason}</p>
             </CardContent>
           </Card>
@@ -399,17 +399,19 @@ export default function UsersAccountPage() {
 
   // Main table view
   return (
-    <div className="container mx-auto py-6 px-4">
+    <div className="container mx-auto py-6 px-4 bg-white min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">All Customers</h1>
+        <h1 className="text-2xl font-bold text-black">All Customers</h1>
         <div className="w-full md:w-1/3">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-600" />
+              <Search className="h-5 w-5 text-gray-800" />
             </div>
+            <label htmlFor="customer-search" className="sr-only text-black">Search</label>
             <input
+              id="customer-search"
               type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-600 focus:outline-none focus:placeholder-gray-600 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-600 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-black"
               placeholder="Search by name or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -423,15 +425,17 @@ export default function UsersAccountPage() {
         </div>
       ) : filteredCustomers.length === 0 ? (
         <div className="text-center py-12">
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="text-lg font-semibold text-black">
             No customers found
           </h3>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-700">
             Try adjusting your search or check back later.
           </p>
         </div>
       ) : (
-        <DataTable columns={columns} data={filteredCustomers} />
+        <div className="bg-white rounded-lg shadow">
+          <DataTable columns={columns} data={filteredCustomers} />
+        </div>
       )}
     </div>
   );
