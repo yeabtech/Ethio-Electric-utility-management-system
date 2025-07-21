@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Alert } from "@/components/ui/alert";
 import { useUploadThing } from "@/lib/uploadthing";
 import EmployeeInboxPage from "./inbox";
+import { useUser } from "@clerk/nextjs";
 
 interface Employee {
   id: string;
@@ -18,6 +19,8 @@ interface Employee {
 }
 
 export default function ManagerNotificationPage() {
+  const { user } = useUser();
+  const [internalUserId, setInternalUserId] = useState<string | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [search, setSearch] = useState("");
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
@@ -33,6 +36,17 @@ export default function ManagerNotificationPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { startUpload, isUploading } = useUploadThing("serviceDocuments");
   const [showDropdown, setShowDropdown] = useState(false);
+
+  // Get internal user ID from Clerk user ID
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`/api/users?clerkUserId=${user.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.id) setInternalUserId(data.id);
+        });
+    }
+  }, [user]);
 
   // Fetch employees
   useEffect(() => {
@@ -93,12 +107,17 @@ export default function ManagerNotificationPage() {
       setError("Please wait for the file to finish uploading.");
       return;
     }
+    if (!internalUserId) {
+      setError("Could not determine your user ID. Try refreshing the page.");
+      return;
+    }
     setError("");
     setLoading(true);
     try {
       const body = {
         content,
         subject,
+        senderId: internalUserId,
         recipients: [selectedEmployee.id],
         attachments: fileUrl ? [{ url: fileUrl, name: file?.name }] : [],
       };
@@ -128,15 +147,15 @@ export default function ManagerNotificationPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-2 md:px-0">
+    <div className="max-w-6xl mx-auto py-8 px-2 md:px-0 bg-white">
       <div className="flex flex-col md:flex-row gap-8">
         {/* Send Message UI */}
         <div className="flex-1 min-w-0">
-          <Card>
-            <CardHeader>
-              <CardTitle>Send Message to Employee</CardTitle>
+          <Card className="bg-white">
+            <CardHeader className="bg-white">
+              <CardTitle className="text-black">Send Message to Employee</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 bg-white">
               {error && <Alert variant="error">{error}</Alert>}
               {/* Recipient selection */}
               <div className="mb-2">
@@ -159,6 +178,7 @@ export default function ManagerNotificationPage() {
                       }}
                       onFocus={() => setShowDropdown(true)}
                       autoComplete="off"
+                      className="text-black bg-white"
                     />
                     {showDropdown && filteredEmployees.length > 0 && (
                       <div className="absolute z-10 bg-white border border-gray-200 rounded-md shadow-lg mt-1 w-full max-h-56 overflow-y-auto">
@@ -184,7 +204,7 @@ export default function ManagerNotificationPage() {
                 placeholder="Subject (optional)"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="mb-2"
+                className="mb-2 text-black bg-white"
                 disabled={!selectedEmployee}
               />
               <Textarea
@@ -192,7 +212,7 @@ export default function ManagerNotificationPage() {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={4}
-                className="mb-2"
+                className="mb-2 text-black bg-white"
                 disabled={!selectedEmployee}
               />
               <div className="flex items-center gap-2">
@@ -200,7 +220,7 @@ export default function ManagerNotificationPage() {
                   type="file"
                   ref={fileInputRef}
                   onChange={handleFileChange}
-                  className="block"
+                  className="block text-black bg-white"
                   disabled={uploading || isUploading || !selectedEmployee}
                 />
                 {file && (
@@ -210,8 +230,8 @@ export default function ManagerNotificationPage() {
                 )}
               </div>
             </CardContent>
-            <CardFooter>
-              <Button onClick={handleSend} disabled={loading || uploading || isUploading || !selectedEmployee}>
+            <CardFooter className="bg-white">
+              <Button onClick={handleSend} disabled={loading || uploading || isUploading || !selectedEmployee} className="text-black bg-white border border-black hover:bg-gray-100">
                 {loading ? "Sending..." : "Send Message"}
               </Button>
             </CardFooter>

@@ -11,9 +11,10 @@ async function getCurrentUserId() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { subject, content, recipients, attachments } = body;
-    const senderId = await getCurrentUserId();
-
+    const { senderId, subject, content, recipients, attachments } = body;
+    if (!senderId || !recipients || recipients.length === 0 || !content) {
+      return NextResponse.json({ success: false, error: 'Missing sender, recipient, or content.' }, { status: 400 });
+    }
     // Create message
     const message = await prisma.message.create({
       data: {
@@ -39,7 +40,6 @@ export async function POST(req: NextRequest) {
         recipients: true,
       },
     });
-
     return NextResponse.json({ success: true, message });
   } catch (error: any) {
     console.error('Error sending message:', error);
