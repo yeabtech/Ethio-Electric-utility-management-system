@@ -70,13 +70,18 @@ export default function ManagerPage() {
   };
 
   return (
-    <div className="min-h-screen flex relative" style={{ backgroundImage: 'url(/bg.png)', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}>
-      {/* Sidebar */}
-      <Sidebar onPageChange={setActivePage} />
-      
-      {/* Main Content */}
-      <div className="flex-1 p-12 ml-72 relative overflow-hidden">
-        {renderContent()}
+    <div className="min-h-screen flex flex-col relative" style={{ backgroundImage: 'url(/bg.png)', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}>
+      {/* Static Header */}
+      <div className="w-full flex justify-center items-center py-6 z-20">
+        <h1 className="text-3xl font-extrabold text-black text-center drop-shadow-lg">Manager Dashboard</h1>
+      </div>
+      <div className="flex flex-1 w-full">
+        {/* Sidebar */}
+        <Sidebar onPageChange={setActivePage} />
+        {/* Main Content */}
+        <div className="flex-1 p-12 ml-72 relative overflow-hidden">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );
