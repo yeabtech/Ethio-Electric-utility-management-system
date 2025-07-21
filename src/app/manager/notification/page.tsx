@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -60,7 +59,7 @@ export default function ManagerNotificationPage() {
   // Filter employees by search
   useEffect(() => {
     if (!search) {
-      setFilteredEmployees([]);
+      setFilteredEmployees(employees);
       return;
     }
     setFilteredEmployees(
@@ -133,8 +132,6 @@ export default function ManagerNotificationPage() {
         setSubject("");
         setFile(null);
         setFileUrl(null);
-        setSelectedEmployee(null);
-        setSearch("");
         if (fileInputRef.current) fileInputRef.current.value = "";
       } else {
         setError(data.error || "Failed to send message.");
@@ -147,102 +144,112 @@ export default function ManagerNotificationPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center py-8">
-      <div className="max-w-6xl w-full bg-white rounded-2xl shadow-lg p-8">
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Send Message UI */}
-          <div className="flex-1 min-w-0">
-            <Card className="bg-white">
-              <CardHeader className="bg-white">
-                <CardTitle className="text-black">Send Message to Employee</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 bg-white">
-                {error && <Alert variant="error">{error}</Alert>}
-                {/* Recipient selection */}
-                <div className="mb-2">
-                  <label className="block text-sm font-medium mb-1 text-black">Recipient</label>
-                  {selectedEmployee ? (
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-semibold text-black">{selectedEmployee.name} ({selectedEmployee.email})</span>
-                      <Button size="sm" variant="outline" onClick={() => setSelectedEmployee(null)}>
-                        Change
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <Input
-                        placeholder="Search employee by name or email..."
-                        value={search}
-                        onChange={(e) => {
-                          setSearch(e.target.value);
-                          setShowDropdown(true);
-                        }}
-                        onFocus={() => setShowDropdown(true)}
-                        autoComplete="off"
-                        className="text-black bg-white"
-                      />
-                      {showDropdown && filteredEmployees.length > 0 && (
-                        <div className="absolute z-10 bg-white border border-gray-200 rounded-md shadow-lg mt-1 w-full max-h-56 overflow-y-auto">
-                          {filteredEmployees.map((emp) => (
-                            <div
-                              key={emp.id}
-                              className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
-                              onClick={() => {
-                                setSelectedEmployee(emp);
-                                setShowDropdown(false);
-                                setSearch("");
-                              }}
-                            >
-                              {emp.name} <span className="text-xs text-gray-500">({emp.email})</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <Input
-                  placeholder="Subject (optional)"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="mb-2 text-black bg-white"
-                  disabled={!selectedEmployee}
-                />
-                <Textarea
-                  placeholder="Type your message..."
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  rows={4}
-                  className="mb-2 text-black bg-white"
-                  disabled={!selectedEmployee}
-                />
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="block text-black bg-white"
-                    disabled={uploading || isUploading || !selectedEmployee}
-                  />
-                  {file && (
-                    <span className="text-sm text-gray-700">
-                      {file.name} {uploading || isUploading ? "(Uploading...)" : fileUrl ? "(Ready)" : ""}
-                    </span>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter className="bg-white">
-                <Button onClick={handleSend} disabled={loading || uploading || isUploading || !selectedEmployee} className="text-black bg-white border border-black hover:bg-gray-100">
-                  {loading ? "Sending..." : "Send Message"}
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-          {/* Inbox UI */}
-          <div className="flex-1 min-w-0">
-            <EmployeeInboxPage />
-          </div>
+    <div className="min-h-screen w-full flex bg-gray-100">
+      {/* Sidebar: Employee list */}
+      <div className="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 flex flex-col h-screen max-h-screen">
+        <div className="p-4 border-b border-gray-200">
+          <Input
+            placeholder="Search employee by name or email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoComplete="off"
+            className="text-black bg-gray-100"
+          />
         </div>
+        <div className="flex-1 overflow-y-auto">
+          {filteredEmployees.length === 0 && (
+            <div className="p-4 text-gray-400 text-center">No employees found.</div>
+          )}
+          {filteredEmployees.map((emp) => (
+            <div
+              key={emp.id}
+              className={`px-4 py-3 cursor-pointer flex items-center gap-2 hover:bg-blue-50 border-b border-gray-100 ${selectedEmployee?.id === emp.id ? "bg-blue-100" : ""}`}
+              onClick={() => setSelectedEmployee(emp)}
+            >
+              <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-lg font-bold text-blue-700">
+                {emp.name[0]}
+              </div>
+              <div className="flex flex-col">
+                <span className="font-semibold text-black">{emp.name}</span>
+                <span className="text-xs text-gray-500">{emp.email}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Chat panel */}
+      <div className="flex-1 flex flex-col h-screen max-h-screen">
+        {/* Chat header */}
+        <div className="h-16 flex items-center px-6 border-b border-gray-200 bg-white shadow-sm">
+          {selectedEmployee ? (
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-lg font-bold text-blue-700">
+                {selectedEmployee.name[0]}
+              </div>
+              <div>
+                <div className="font-semibold text-black">{selectedEmployee.name}</div>
+                <div className="text-xs text-gray-500">{selectedEmployee.email}</div>
+              </div>
+            </div>
+          ) : (
+            <span className="text-gray-400">Select an employee to start chatting</span>
+          )}
+        </div>
+        {/* Chat body */}
+        <div className="flex-1 overflow-y-auto bg-gray-50 px-6 py-4">
+          {selectedEmployee ? (
+            <EmployeeInboxPage employeeId={selectedEmployee.id} />
+          ) : (
+            <div className="h-full flex items-center justify-center text-gray-400">
+              Select an employee to view messages.
+            </div>
+          )}
+        </div>
+        {/* Message input */}
+        {selectedEmployee && (
+          <div className="border-t border-gray-200 bg-white px-6 py-4 flex flex-col gap-2 sticky bottom-0">
+            {error && <Alert variant="error">{error}</Alert>}
+            <div className="flex gap-2 items-end">
+              <Textarea
+                placeholder="Type your message..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={2}
+                className="flex-1 text-black bg-gray-100 resize-none"
+                disabled={loading || uploading || isUploading}
+              />
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                disabled={uploading || isUploading}
+              />
+              <Button
+                type="button"
+                className="bg-blue-600 text-white hover:bg-blue-700"
+                disabled={loading || uploading || isUploading || !content.trim()}
+                onClick={handleSend}
+              >
+                {loading ? "Sending..." : "Send"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="border-gray-300"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || isUploading}
+              >
+                {file ? (uploading || isUploading ? "Uploading..." : fileUrl ? "File Ready" : file.name) : "Attach"}
+              </Button>
+            </div>
+            {file && (
+              <div className="text-xs text-gray-600 mt-1">
+                {file.name} {uploading || isUploading ? "(Uploading...)" : fileUrl ? "(Ready)" : ""}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

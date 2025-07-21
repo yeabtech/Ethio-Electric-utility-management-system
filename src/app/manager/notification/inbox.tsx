@@ -14,11 +14,16 @@ interface Message {
   content: string;
   sentAt: string;
   attachments?: { name: string; url: string }[];
-  sender?: { name: string; email: string };
+  sender?: { name: string; email: string; id?: string };
+  recipients?: { id: string }[];
   read: boolean;
 }
 
-export default function EmployeeInboxPage() {
+interface EmployeeInboxPageProps {
+  employeeId?: string;
+}
+
+export default function EmployeeInboxPage({ employeeId }: EmployeeInboxPageProps) {
   const { user } = useUser();
   const [internalUserId, setInternalUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -37,17 +42,21 @@ export default function EmployeeInboxPage() {
     }
   }, [user]);
 
-  // Fetch inbox messages for this user
+  // Fetch messages for this user (DM if employeeId is provided)
   useEffect(() => {
     if (!internalUserId) return;
     setLoading(true);
-    fetch(`/api/messages?inbox=1&userId=${internalUserId}`)
+    let url = `/api/messages?inbox=1&userId=${internalUserId}`;
+    if (employeeId) {
+      url += `&dmWith=${employeeId}`;
+    }
+    fetch(url)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setMessages(data.messages);
       })
       .finally(() => setLoading(false));
-  }, [internalUserId]);
+  }, [internalUserId, employeeId]);
 
   const markAsRead = async (id: string) => {
     try {
@@ -76,13 +85,13 @@ export default function EmployeeInboxPage() {
     <div className="max-w-3xl mx-auto py-8 space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle>Inbox</CardTitle>
+          <CardTitle>{employeeId ? "Direct Messages" : "Inbox"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
           {loading ? (
             <div className="text-gray-500">Loading...</div>
           ) : messages.length === 0 ? (
-            <div className="text-gray-500">No messages in your inbox.</div>
+            <div className="text-gray-500">No messages{employeeId ? " with this employee." : " in your inbox."}</div>
           ) : (
             messages.map((msg) => (
               <div key={msg.id} className="border-b pb-3 mb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
