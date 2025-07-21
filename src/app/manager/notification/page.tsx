@@ -147,99 +147,101 @@ export default function ManagerNotificationPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-2 md:px-0 bg-white">
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Send Message UI */}
-        <div className="flex-1 min-w-0">
-          <Card className="bg-white">
-            <CardHeader className="bg-white">
-              <CardTitle className="text-black">Send Message to Employee</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 bg-white">
-              {error && <Alert variant="error">{error}</Alert>}
-              {/* Recipient selection */}
-              <div className="mb-2">
-                <label className="block text-sm font-medium mb-1 text-black">Recipient</label>
-                {selectedEmployee ? (
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-semibold text-black">{selectedEmployee.name} ({selectedEmployee.email})</span>
-                    <Button size="sm" variant="outline" onClick={() => setSelectedEmployee(null)}>
-                      Change
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <Input
-                      placeholder="Search employee by name or email..."
-                      value={search}
-                      onChange={(e) => {
-                        setSearch(e.target.value);
-                        setShowDropdown(true);
-                      }}
-                      onFocus={() => setShowDropdown(true)}
-                      autoComplete="off"
-                      className="text-black bg-white"
-                    />
-                    {showDropdown && filteredEmployees.length > 0 && (
-                      <div className="absolute z-10 bg-white border border-gray-200 rounded-md shadow-lg mt-1 w-full max-h-56 overflow-y-auto">
-                        {filteredEmployees.map((emp) => (
-                          <div
-                            key={emp.id}
-                            className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
-                            onClick={() => {
-                              setSelectedEmployee(emp);
-                              setShowDropdown(false);
-                              setSearch("");
-                            }}
-                          >
-                            {emp.name} <span className="text-xs text-gray-500">({emp.email})</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              <Input
-                placeholder="Subject (optional)"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                className="mb-2 text-black bg-white"
-                disabled={!selectedEmployee}
-              />
-              <Textarea
-                placeholder="Type your message..."
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={4}
-                className="mb-2 text-black bg-white"
-                disabled={!selectedEmployee}
-              />
-              <div className="flex items-center gap-2">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="block text-black bg-white"
-                  disabled={uploading || isUploading || !selectedEmployee}
+    <div className="min-h-screen w-full bg-[var(--background)] flex items-center justify-center py-8">
+      <div className="max-w-6xl w-full bg-white rounded-2xl shadow-lg p-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Send Message UI */}
+          <div className="flex-1 min-w-0">
+            <Card className="bg-white">
+              <CardHeader className="bg-white">
+                <CardTitle className="text-black">Send Message to Employee</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 bg-white">
+                {error && <Alert variant="error">{error}</Alert>}
+                {/* Recipient selection */}
+                <div className="mb-2">
+                  <label className="block text-sm font-medium mb-1 text-black">Recipient</label>
+                  {selectedEmployee ? (
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-semibold text-black">{selectedEmployee.name} ({selectedEmployee.email})</span>
+                      <Button size="sm" variant="outline" onClick={() => setSelectedEmployee(null)}>
+                        Change
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <Input
+                        placeholder="Search employee by name or email..."
+                        value={search}
+                        onChange={(e) => {
+                          setSearch(e.target.value);
+                          setShowDropdown(true);
+                        }}
+                        onFocus={() => setShowDropdown(true)}
+                        autoComplete="off"
+                        className="text-black bg-white"
+                      />
+                      {showDropdown && filteredEmployees.length > 0 && (
+                        <div className="absolute z-10 bg-white border border-gray-200 rounded-md shadow-lg mt-1 w-full max-h-56 overflow-y-auto">
+                          {filteredEmployees.map((emp) => (
+                            <div
+                              key={emp.id}
+                              className="px-4 py-2 cursor-pointer hover:bg-blue-100 text-black"
+                              onClick={() => {
+                                setSelectedEmployee(emp);
+                                setShowDropdown(false);
+                                setSearch("");
+                              }}
+                            >
+                              {emp.name} <span className="text-xs text-gray-500">({emp.email})</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <Input
+                  placeholder="Subject (optional)"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="mb-2 text-black bg-white"
+                  disabled={!selectedEmployee}
                 />
-                {file && (
-                  <span className="text-sm text-gray-700">
-                    {file.name} {uploading || isUploading ? "(Uploading...)" : fileUrl ? "(Ready)" : ""}
-                  </span>
-                )}
-              </div>
-            </CardContent>
-            <CardFooter className="bg-white">
-              <Button onClick={handleSend} disabled={loading || uploading || isUploading || !selectedEmployee} className="text-black bg-white border border-black hover:bg-gray-100">
-                {loading ? "Sending..." : "Send Message"}
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-        {/* Inbox UI */}
-        <div className="flex-1 min-w-0">
-          <EmployeeInboxPage />
+                <Textarea
+                  placeholder="Type your message..."
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  rows={4}
+                  className="mb-2 text-black bg-white"
+                  disabled={!selectedEmployee}
+                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="block text-black bg-white"
+                    disabled={uploading || isUploading || !selectedEmployee}
+                  />
+                  {file && (
+                    <span className="text-sm text-gray-700">
+                      {file.name} {uploading || isUploading ? "(Uploading...)" : fileUrl ? "(Ready)" : ""}
+                    </span>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter className="bg-white">
+                <Button onClick={handleSend} disabled={loading || uploading || isUploading || !selectedEmployee} className="text-black bg-white border border-black hover:bg-gray-100">
+                  {loading ? "Sending..." : "Send Message"}
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+          {/* Inbox UI */}
+          <div className="flex-1 min-w-0">
+            <EmployeeInboxPage />
+          </div>
         </div>
       </div>
     </div>
