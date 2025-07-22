@@ -159,6 +159,7 @@ export default function TechnicianReportPage() {
       // Convert report data to the format expected by the API
       const updatedReportData: {[key: string]: string} = { ...reportData }
       // Check for signature fields that are data URLs and upload them
+      let uploadedAttachments: Array<{ url: string, name: string, type: string, size: number }> = []
       for (const field of selectedTemplate.fields || []) {
         if (field.type === 'signature' && updatedReportData[field.name] && updatedReportData[field.name].startsWith('data:image/')) {
           try {
@@ -167,7 +168,15 @@ export default function TechnicianReportPage() {
             const file = new File([blob], 'signature.png', { type: 'image/png' })
             const uploadResult = await startSignatureUpload([file])
             if (uploadResult && uploadResult[0]?.url) {
-              updatedReportData[field.name] = uploadResult[0].url
+              // Add signature as an attachment
+              uploadedAttachments.push({
+                url: uploadResult[0].url,
+                name: 'signature.png',
+                type: 'image/png',
+                size: blob.size
+              })
+              // Remove signature URL from report data (or set to empty string)
+              updatedReportData[field.name] = ''
             } else {
               throw new Error('Failed to upload signature')
             }
@@ -186,18 +195,17 @@ export default function TechnicianReportPage() {
       }))
 
       // Upload attachments to UploadThing
-      let uploadedAttachments: Array<{ url: string, name: string, type: string, size: number }> = []
       if (attachments.length > 0) {
         setAttachmentUploadError('')
         try {
           const uploadResults = await startAttachmentUpload(attachments)
           if (uploadResults && uploadResults.length > 0) {
-            uploadedAttachments = uploadResults.map((result, idx) => ({
+            uploadedAttachments = uploadedAttachments.concat(uploadResults.map((result, idx) => ({
               url: result.url,
               name: attachments[idx]?.name || 'attachment',
               type: attachments[idx]?.type || '',
               size: attachments[idx]?.size || 0
-            }))
+            })))
           } else {
             throw new Error('Failed to upload attachments')
           }
@@ -258,6 +266,7 @@ export default function TechnicianReportPage() {
               onChange={(e) => handleReportDataChange(name, e.target.value)}
               placeholder={placeholder || `Enter ${label.toLowerCase()}`}
               required={required}
+              className="text-black"
             />
           </div>
         )
@@ -273,6 +282,7 @@ export default function TechnicianReportPage() {
               placeholder={placeholder || `Enter ${label.toLowerCase()}`}
               required={required}
               rows={4}
+              className="text-black"
             />
           </div>
         )
@@ -286,12 +296,12 @@ export default function TechnicianReportPage() {
               value={reportData[name] || ''}
               onValueChange={(value) => handleReportDataChange(name, value)}
             >
-              <SelectTrigger>
-                <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+              <SelectTrigger className="text-black">
+                <SelectValue placeholder={`Select ${label.toLowerCase()}`} className="text-black" />
               </SelectTrigger>
               <SelectContent>
                 {options?.map((option: string) => (
-                  <SelectItem key={option} value={option}>
+                  <SelectItem key={option} value={option} className="text-black">
                     {option}
                   </SelectItem>
                 ))}
@@ -310,6 +320,7 @@ export default function TechnicianReportPage() {
               value={reportData[name] || ''}
               onChange={(e) => handleReportDataChange(name, e.target.value)}
               required={required}
+              className="text-black"
             />
           </div>
         )
@@ -323,6 +334,7 @@ export default function TechnicianReportPage() {
               type="file"
               multiple
               onChange={(e) => handleFileUpload(e)}
+              className="text-black"
             />
           </div>
         )
@@ -330,7 +342,7 @@ export default function TechnicianReportPage() {
         return (
           <div key={name} className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
-              {label} {required && <span className="text-red-500">*</span>}
+              Customer Signature {required && <span className="text-red-500">*</span>}
             </label>
             <div className="border border-gray-300 rounded h-32 bg-gray-50 flex flex-col items-center justify-center">
               <SignaturePad
