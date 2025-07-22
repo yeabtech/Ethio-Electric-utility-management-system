@@ -22,7 +22,12 @@ interface Service {
   // ...other fields
 }
 
-const Dashboard = () => {
+interface DashboardProps {
+  onNotificationClick?: () => void;
+  hasUnreadNotifications?: boolean;
+}
+
+const Dashboard = ({ onNotificationClick, hasUnreadNotifications }: DashboardProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userCount, setUserCount] = useState(0);
@@ -70,8 +75,14 @@ const Dashboard = () => {
     <div className="relative">
       {/* Notification Icon */}
       <div className="absolute top-0 right-0 mt-2 mr-2">
-        <button className="relative p-2 rounded-full bg-indigo-500 hover:bg-indigo-600 transition-colors">
+        <button
+          className="relative p-2 rounded-full bg-indigo-500 hover:bg-indigo-600 transition-colors"
+          onClick={onNotificationClick}
+        >
           <Bell className="w-6 h-6 text-white" />
+          {hasUnreadNotifications ? (
+            <span className="absolute top-1 right-1 block w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
+          ) : null}
         </button>
       </div>
       <h2 className="text-2xl font-bold mb-4 text-black text-center">CSO Dashboard</h2>

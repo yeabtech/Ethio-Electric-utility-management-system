@@ -13,10 +13,13 @@ import AnalyticsPage from './analytics/page';
 import CSOReportsPage from './report/page';
 import CSONotificationPage from './notification/page';
 import "@/app/globals.css";
+import { useUser } from '@clerk/nextjs';
 
 export default function CustomerOperatorPageClient() {
   const searchParams = useSearchParams();
   const [activePage, setActivePage] = useState('Dashboard');
+  const { user } = useUser();
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
   // Set initial active page based on query parameter
   useEffect(() => {
@@ -26,10 +29,37 @@ export default function CustomerOperatorPageClient() {
     }
   }, [searchParams]);
 
+  // Fetch unread notifications
+  useEffect(() => {
+    let ignore = false;
+    async function fetchUnread() {
+      if (!user?.id) return;
+      try {
+        const res = await fetch(`/api/users?clerkUserId=${user.id}`);
+        const data = await res.json();
+        if (!data?.id) return;
+        const inboxRes = await fetch(`/api/messages?inbox=1&userId=${data.id}`);
+        const inboxData = await inboxRes.json();
+        if (!ignore && inboxData.success && Array.isArray(inboxData.messages)) {
+          setHasUnreadNotifications(inboxData.messages.some((msg: any) => !msg.read));
+        }
+      } catch {
+        // ignore errors
+      }
+    }
+    fetchUnread();
+    return () => { ignore = true; };
+  }, [user]);
+
+  const handleNotificationClick = () => {
+    setActivePage('Notifications');
+    setHasUnreadNotifications(false); // Optionally clear badge immediately
+  };
+
   const renderContent = () => {
     switch (activePage) {
       case 'Dashboard':
-        return <Dashboard />;
+        return <Dashboard onNotificationClick={handleNotificationClick} hasUnreadNotifications={hasUnreadNotifications} />;
       case 'Users':
         return <UsersPage />;
       case 'verfiy users':
