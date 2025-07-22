@@ -11,6 +11,7 @@ import UsersPage from './users/page';
 import CustomerSupportPage from './support/page';
 import AnalyticsPage from './analytics/page';
 import CSOReportsPage from './report/page';
+import CSONotificationPage from './notification/page';
 import "@/app/globals.css";
 
 export default function CustomerOperatorPageClient() {
@@ -43,6 +44,8 @@ export default function CustomerOperatorPageClient() {
         return <CustomerSupportPage />;
       case 'Analytics':
         return <AnalyticsPage />;
+      case 'Notifications':
+        return <CSONotificationPage />;
       default:
         return <div className="bg-white p-8 rounded-lg shadow-md">
           <p className="text-lg">Welcome to your Customer Service Operator dashboard</p>
@@ -59,6 +62,7 @@ export default function CustomerOperatorPageClient() {
     'Reports',
     'Support',
     'Analytics',
+    'Notifications',
   ].includes(activePage);
 
   return (
