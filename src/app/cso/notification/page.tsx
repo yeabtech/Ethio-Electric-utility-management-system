@@ -254,7 +254,7 @@ export default function CsoNotificationPage() {
     }
   };
 
-  const handleSelectEmployee = (emp: Employee) => {
+  const handleSelectEmployee = async (emp: Employee) => {
     setSelectedEmployee(emp);
     // Optionally, clear unread alert for this employee in sidebar
     setSidebarEntries((prev) =>
@@ -262,6 +262,20 @@ export default function CsoNotificationPage() {
         entry.employee.id === emp.id ? { ...entry, unread: false } : entry
       )
     );
+    // Mark all unread messages from this employee as read
+    if (internalUserId) {
+      // Fetch inbox messages to find unread ones from this employee
+      const inboxRes = await fetch(`/api/messages?inbox=1&userId=${internalUserId}`);
+      const inboxData = await inboxRes.json();
+      if (inboxData.success && Array.isArray(inboxData.messages)) {
+        const unreadFromEmp = inboxData.messages.filter(
+          (msg: any) => msg.sender?.id === emp.id && !msg.read
+        );
+        for (const msg of unreadFromEmp as any[]) {
+          await fetch(`/api/messages/${msg.id}/read`, { method: "PATCH" });
+        }
+      }
+    }
   };
 
   // Manual refresh handler
