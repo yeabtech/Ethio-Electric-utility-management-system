@@ -30,6 +30,7 @@ type ServiceApplication = {
     plotNumber?: string
     voltageLevel?: string
   }
+  documents?: string[] // <-- Added documents field
 }
 
 export default function CSOServiceApprovalPage() {
@@ -284,6 +285,23 @@ export default function CSOServiceApprovalPage() {
               <span className="font-semibold text-gray-700">Requested At:</span>
               <span>{new Date(selectedService.createdAt).toLocaleString()}</span>
             </div>
+            {/* Document Images Section */}
+            {selectedService.documents && selectedService.documents.length > 0 && (
+              <div>
+                <span className="font-semibold text-gray-700">Documents:</span>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedService.documents.map((url, idx) => (
+                    <a key={idx} href={url} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={url}
+                        alt={`Document ${idx + 1}`}
+                        className="w-24 h-24 object-cover rounded border"
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
