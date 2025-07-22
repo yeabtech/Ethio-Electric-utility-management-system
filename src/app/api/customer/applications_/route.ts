@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { clerkClient } from '@clerk/clerk-sdk-node';
 
 export async function GET(request: Request) {
   try {
@@ -43,14 +44,7 @@ export async function GET(request: Request) {
               select: {
                 user: {
                   select: {
-                    verification: {
-                      select: {
-                        firstName: true,
-                        lastName: true,
-                      },
-                      orderBy: { createdAt: 'desc' },
-                      take: 1,
-                    },
+                    clerkUserId: true,
                   },
                 },
               },
@@ -86,11 +80,17 @@ export async function GET(request: Request) {
     });
 
     // Manually map to ensure only the expected fields are sent
-    const safeApplications = applications.map(app => {
+    const safeApplications = await Promise.all(applications.map(async app => {
       let technicianName = null;
-      if (app.task?.technician?.user?.verification?.length) {
-        const v = app.task.technician.user.verification[0];
-        technicianName = `${v.firstName} ${v.lastName}`.trim();
+      if (app.task?.technician?.user?.clerkUserId) {
+        try {
+          const clerkUser = await clerkClient.users.getUser(app.task.technician.user.clerkUserId);
+          const firstName = clerkUser.firstName || '';
+          const lastName = clerkUser.lastName || '';
+          technicianName = `${firstName} ${lastName}`.trim();
+        } catch (e) {
+          technicianName = null;
+        }
       }
       return {
         ...app,
@@ -117,7 +117,7 @@ export async function GET(request: Request) {
             }
           : null,
       };
-    });
+    }));
 
     return NextResponse.json(safeApplications);
   } catch (error) {
