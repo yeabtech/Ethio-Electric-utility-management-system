@@ -108,9 +108,9 @@ export default function HomePage({ verification, loading }: HomePageProps) {
                 <Image
                   src="/phone.gif"
                   alt="Phone Hotline"
-                  width={40}
-                  height={40}
-                  className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 object-contain"
+                  width={56}
+                  height={56}
+                  className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain"
                   priority
                 />
               </button>
