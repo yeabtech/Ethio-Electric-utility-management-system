@@ -112,7 +112,7 @@ const EmployeeInboxPage = forwardRef(function EmployeeInboxPage({ employeeId }: 
                 <div
                   className={`rounded-2xl px-4 py-2 shadow-sm text-sm whitespace-pre-line break-words ${
                     isSentByMe
-                      ? "bg-blue-500 text-white rounded-br-md"
+                      ? "bg-blue-500 text-black rounded-br-md"
                       : "bg-gray-200 text-black rounded-bl-md"
                   }`}
                 >
@@ -125,17 +125,17 @@ const EmployeeInboxPage = forwardRef(function EmployeeInboxPage({ employeeId }: 
                           href={att.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="underline text-xs text-blue-100 hover:text-blue-300"
+                          className="underline text-xs text-black hover:text-blue-700"
                         >
                           {att.name}
-                          <Download className="inline w-4 h-4 ml-1" />
+                          <Download className="inline w-4 h-4 ml-1 text-black" />
                         </a>
                       ))}
                     </div>
                   )}
                 </div>
                 <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                  <span>{new Date(msg.sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                  <span className="text-black">{new Date(msg.sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                   {/* Telegram-style checkmarks for sent messages */}
                   {isSentByMe && (
                     <span className={`ml-1 text-lg ${msg.read ? "text-blue-300" : "text-blue-600"}`} title={msg.read ? "Seen" : "Sent"}>

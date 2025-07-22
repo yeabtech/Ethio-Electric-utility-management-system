@@ -10,6 +10,7 @@ import { useUploadThing } from "@/lib/uploadthing";
 import EmployeeInboxPage from "./inbox";
 import { useUser } from "@clerk/nextjs";
 import { Bell } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useRef as useComponentRef } from "react";
 
 interface Employee {
@@ -262,11 +263,80 @@ export default function ManagerNotificationPage() {
     );
   };
 
+  // Manual refresh handler
+  const handleManualRefresh = () => {
+    // Re-fetch employees
+    fetch("/api/employees")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setEmployees(data.employees);
+      });
+    // Re-fetch sidebar messages
+    if (internalUserId) {
+      Promise.all([
+        fetch(`/api/messages?inbox=1&userId=${internalUserId}`).then((res) => res.json()),
+        fetch(`/api/messages?userId=${internalUserId}`).then((res) => res.json()),
+      ]).then(([inboxData, sentData]) => {
+        if (!inboxData.success && !sentData.success) return;
+        const map: Record<string, { lastMessageAt: string; unread: boolean }> = {};
+        if (inboxData.success) {
+          for (const msg of inboxData.messages) {
+            const senderId = msg.sender?.id;
+            if (senderId && senderId !== internalUserId) {
+              if (!map[senderId] || new Date(msg.sentAt) > new Date(map[senderId].lastMessageAt)) {
+                map[senderId] = { lastMessageAt: msg.sentAt, unread: !msg.read };
+              } else if (!msg.read) {
+                map[senderId].unread = true;
+              }
+            }
+          }
+        }
+        if (sentData.success) {
+          for (const msg of sentData.messages) {
+            if (Array.isArray(msg.recipients)) {
+              for (const rec of msg.recipients) {
+                const recId = rec.id;
+                if (recId && recId !== internalUserId) {
+                  if (!map[recId] || new Date(msg.sentAt) > new Date(map[recId].lastMessageAt)) {
+                    map[recId] = { lastMessageAt: msg.sentAt, unread: false };
+                  }
+                }
+              }
+            }
+          }
+        }
+        setSidebarEntries(
+          employees
+            .map((emp) => ({
+              employee: emp,
+              lastMessageAt: map[emp.id]?.lastMessageAt || null,
+              unread: map[emp.id]?.unread || false,
+            }))
+            .sort((a, b) => {
+              if (a.lastMessageAt && b.lastMessageAt) {
+                return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime();
+              } else if (a.lastMessageAt) {
+                return -1;
+              } else if (b.lastMessageAt) {
+                return 1;
+              } else {
+                return a.employee.name.localeCompare(b.employee.name);
+              }
+            })
+        );
+      });
+    }
+    // Refresh chat if open
+    if (inboxRef.current && typeof inboxRef.current.refresh === "function") {
+      inboxRef.current.refresh();
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex bg-gray-100">
       {/* Sidebar: Employee list */}
       <div className="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 flex flex-col h-screen max-h-screen">
-        <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <Input
             placeholder="Search employee by name or email..."
             value={search}
@@ -274,6 +344,14 @@ export default function ManagerNotificationPage() {
             autoComplete="off"
             className="text-black bg-gray-100"
           />
+          <button
+            onClick={handleManualRefresh}
+            className="ml-2 p-2 rounded hover:bg-gray-200"
+            title="Refresh"
+            type="button"
+          >
+            <RefreshCw className="w-5 h-5 text-black" />
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto">
           {sidebarEntries.length === 0 && (
