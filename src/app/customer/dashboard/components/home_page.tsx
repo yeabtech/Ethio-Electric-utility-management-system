@@ -5,6 +5,7 @@ import { useTheme } from '@/app/context/ThemeContext'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useLanguage } from '@/app/context/LanguageContext'
+import Image from 'next/image'
 
 type Verification = {
   status: 'pending' | 'approved' | 'rejected' | 'not_verified'
@@ -51,6 +52,7 @@ export default function HomePage({ verification, loading }: HomePageProps) {
   const [news, setNews] = useState<NewsArticle[]>([])
   const [loadingNews, setLoadingNews] = useState(true)
   const [expandedNews, setExpandedNews] = useState<string | null>(null)
+  const [showPhonePopup, setShowPhonePopup] = useState(false)
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -93,7 +95,48 @@ export default function HomePage({ verification, loading }: HomePageProps) {
       <main className="p-4 space-y-6">
         {/* Welcome Section - Shown to all users */}
         <div className="bg-card p-6 rounded-lg border border-border shadow-sm">
-          <h1 className="text-2xl font-bold text-foreground mb-2 text-center">{t.welcome[language]}</h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-2xl font-bold text-foreground text-center flex-1">{t.welcome[language]}</h1>
+            <div className="ml-4 flex-shrink-0">
+              <button
+                aria-label="Power Outage Hotline"
+                onClick={() => setShowPhonePopup(true)}
+                onTouchStart={() => setShowPhonePopup(true)}
+                className="focus:outline-none"
+                style={{ background: 'none', border: 'none', padding: 0 }}
+              >
+                <Image
+                  src="/phone.gif"
+                  alt="Phone Hotline"
+                  width={40}
+                  height={40}
+                  className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 object-contain"
+                  priority
+                />
+              </button>
+            </div>
+          </div>
+          {/* Phone popup */}
+          {showPhonePopup && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+              onClick={() => setShowPhonePopup(false)}
+            >
+              <div
+                className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 max-w-xs w-full text-center relative"
+                onClick={e => e.stopPropagation()}
+              >
+                <p className="text-lg font-semibold mb-2 text-red-600">Power Outage Hotline</p>
+                <p className="text-base text-foreground mb-4">For power outage, use our hotline <span className="font-bold">905</span> and <span className="font-bold">904</span>.</p>
+                <button
+                  className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none"
+                  onClick={() => setShowPhonePopup(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
 
           
           {!isVerified && (
