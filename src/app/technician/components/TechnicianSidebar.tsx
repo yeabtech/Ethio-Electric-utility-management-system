@@ -1,7 +1,7 @@
 "use client";
 
 import { UserButton, useUser } from "@clerk/nextjs";
-import { Home, Wrench, FileText, Settings, LogOut, X, Menu, CheckCircle2, XCircle } from "lucide-react";
+import { Home, Wrench, FileText, Bell, LogOut, X, Menu, CheckCircle2, XCircle } from "lucide-react";
 import React from "react";
 
 const menuItems = [
@@ -10,7 +10,7 @@ const menuItems = [
   { label: "Completed Tasks", icon: CheckCircle2 },
   { label: "Canceled Tasks", icon: XCircle },
   { label: "Reports", icon: FileText },
-  { label: "Settings", icon: Settings },
+  { label: "notification", icon: Bell },
 ];
 
 interface TechnicianSidebarProps {

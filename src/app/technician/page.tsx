@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import Chart from "chart.js/auto";
 import { addMonths, format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import Image from "next/image";
+import TechnicianNotificationPage from "./notification/page";
 
 export default function TechnicianDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,6 +28,7 @@ export default function TechnicianDashboard() {
   const chart1Instance = useRef<any>(null);
   const chart2Instance = useRef<any>(null);
   const [showLoader, setShowLoader] = useState(false);
+  const [latestMessages, setLatestMessages] = useState<any[]>([]);
 
   useEffect(() => {
     if (!isLoaded || !user?.id) return;
@@ -69,6 +71,28 @@ export default function TechnicianDashboard() {
       }
     };
     fetchTasks();
+
+    // Fetch latest notifications/messages
+    const fetchMessages = async () => {
+      try {
+        // Get internal user id
+        const userRes = await fetch(`/api/users?clerkUserId=${user.id}`);
+        const userData = await userRes.json();
+        if (!userData?.id) return;
+        const inboxRes = await fetch(`/api/messages?inbox=1&userId=${userData.id}`);
+        const inboxData = await inboxRes.json();
+        if (inboxData.success && Array.isArray(inboxData.messages)) {
+          // Sort by sentAt descending, take 3
+          const sorted = inboxData.messages.sort((a: any, b: any) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
+          setLatestMessages(sorted.slice(0, 3));
+        } else {
+          setLatestMessages([]);
+        }
+      } catch {
+        setLatestMessages([]);
+      }
+    };
+    fetchMessages();
   }, [isLoaded, user?.id, selectedMonth]);
 
   // Draw charts when data changes
@@ -196,6 +220,14 @@ export default function TechnicianDashboard() {
             <iframe
               src="/technician/report"
               title="Report"
+              className="w-full h-screen min-h-[600px] md:h-full rounded-none border-0"
+              style={{ minHeight: '100vh' }}
+              onLoad={() => setShowLoader(false)}
+            />
+          ) : selectedMenu === "notification" ? (
+            <iframe
+              src="/technician/notification"
+              title="Notification"
               className="w-full h-screen min-h-[600px] md:h-full rounded-none border-0"
               style={{ minHeight: '100vh' }}
               onLoad={() => setShowLoader(false)}
@@ -337,27 +369,23 @@ export default function TechnicianDashboard() {
                 <div className="bg-[#23243a] rounded-xl p-6 shadow">
                   <span className="text-white text-lg font-semibold mb-2 block">Notifications</span>
                   <ul className="space-y-3">
-                    <li className="flex items-start gap-2">
-                      <span className="inline-block h-8 w-8 rounded-full bg-gray-500"></span>
-                      <div>
-                        <span className="text-white font-medium">David Paul</span>
-                        <span className="block text-gray-400 text-xs">requested for a refrigerator repair - Warranty (Y)<br />10 mins ago <button className="text-blue-400 ml-2">Accept</button></span>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="inline-block h-8 w-8 rounded-full bg-gray-500"></span>
-                      <div>
-                        <span className="text-white font-medium">Immanuel</span>
-                        <span className="block text-gray-400 text-xs">ordered a microwave oven recently. Demo requested<br />14 mins ago <button className="text-blue-400 ml-2">Accept</button></span>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="inline-block h-8 w-8 rounded-full bg-gray-500"></span>
-                      <div>
-                        <span className="text-white font-medium">Sandra As</span>
-                        <span className="block text-gray-400 text-xs">requested service help malfunctioning air cooler<br />20 mins ago <button className="text-blue-400 ml-2">Accept</button></span>
-                      </div>
-                    </li>
+                    {latestMessages.length === 0 ? (
+                      <li className="text-gray-400 text-center py-4">No notifications yet.</li>
+                    ) : latestMessages.map((msg, idx) => (
+                      <li key={msg.id || idx} className="flex items-start gap-2">
+                        <span className="inline-block h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg">
+                          {msg.sender?.name ? msg.sender.name[0] : (msg.sender?.email ? msg.sender.email[0] : '?')}
+                        </span>
+                        <div>
+                          <span className="text-white font-medium">{msg.sender?.name || msg.sender?.email || 'Unknown'}</span>
+                          <span className="block text-gray-400 text-xs break-words">
+                            {msg.content.length > 80 ? msg.content.slice(0, 80) + '...' : msg.content}
+                            <br />
+                            {msg.sentAt ? new Date(msg.sentAt).toLocaleString() : ''}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
