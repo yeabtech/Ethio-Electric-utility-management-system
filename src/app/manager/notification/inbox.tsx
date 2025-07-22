@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, forwardRef, useImperativeHandle } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Download } from "lucide-react";
 
@@ -19,7 +19,7 @@ interface EmployeeInboxPageProps {
   employeeId?: string;
 }
 
-export default function EmployeeInboxPage({ employeeId }: EmployeeInboxPageProps) {
+const EmployeeInboxPage = forwardRef(function EmployeeInboxPage({ employeeId }: EmployeeInboxPageProps, ref) {
   const { user } = useUser();
   const [internalUserId, setInternalUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -37,21 +37,43 @@ export default function EmployeeInboxPage({ employeeId }: EmployeeInboxPageProps
     }
   }, [user]);
 
-  // Fetch messages for this user (DM if employeeId is provided)
-  useEffect(() => {
-    if (!internalUserId) return;
+  // Fetch both inbox and sent messages, filter to those exchanged with employeeId
+  const fetchMessages = () => {
+    if (!internalUserId || !employeeId) return;
     setLoading(true);
-    let url = `/api/messages?inbox=1&userId=${internalUserId}`;
-    if (employeeId) {
-      url += `&dmWith=${employeeId}`;
-    }
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setMessages(data.messages);
-      })
-      .finally(() => setLoading(false));
+    Promise.all([
+      fetch(`/api/messages?inbox=1&userId=${internalUserId}`).then((res) => res.json()),
+      fetch(`/api/messages?userId=${internalUserId}`).then((res) => res.json()),
+    ]).then(([inboxData, sentData]) => {
+      let all: Message[] = [];
+      if (inboxData.success) {
+        all = all.concat(
+          inboxData.messages.filter((msg: Message) => msg.sender?.id === employeeId)
+        );
+      }
+      if (sentData.success) {
+        all = all.concat(
+          sentData.messages.filter((msg: Message) =>
+            Array.isArray(msg.recipients) && msg.recipients.some((r) => r.id === employeeId)
+          )
+        );
+      }
+      // Sort by sentAt ascending (oldest at top)
+      all.sort((a, b) => new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime());
+      setMessages(all);
+      setLoading(false);
+    });
+  };
+
+  useEffect(() => {
+    fetchMessages();
+    // eslint-disable-next-line
   }, [internalUserId, employeeId]);
+
+  // Expose refresh method to parent
+  useImperativeHandle(ref, () => ({
+    refresh: fetchMessages,
+  }));
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -63,13 +85,17 @@ export default function EmployeeInboxPage({ employeeId }: EmployeeInboxPageProps
   }
 
   if (messages.length === 0) {
-    return <div className="text-gray-400 text-center py-8">No messages yet</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-8">
+        <div className="text-gray-400 text-center text-lg opacity-60 select-none">No messages yet</div>
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col gap-2 h-full">
       <div className="flex-1 overflow-y-auto px-2 py-2">
-        {[...messages].reverse().map((msg) => {
+        {messages.map((msg) => {
           const isSentByMe = msg.sender?.id === internalUserId;
           return (
             <div
@@ -130,4 +156,6 @@ export default function EmployeeInboxPage({ employeeId }: EmployeeInboxPageProps
       </div>
     </div>
   );
-} 
+});
+
+export default EmployeeInboxPage; 

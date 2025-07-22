@@ -10,6 +10,7 @@ import { useUploadThing } from "@/lib/uploadthing";
 import EmployeeInboxPage from "./inbox";
 import { useUser } from "@clerk/nextjs";
 import { Bell } from "lucide-react";
+import { useRef as useComponentRef } from "react";
 
 interface Employee {
   id: string;
@@ -42,6 +43,7 @@ export default function ManagerNotificationPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { startUpload, isUploading } = useUploadThing("serviceDocuments");
   const [sidebarEntries, setSidebarEntries] = useState<SidebarEntry[]>([]);
+  const inboxRef = useComponentRef<any>(null);
 
   // Get internal user ID from Clerk user ID
   useEffect(() => {
@@ -236,6 +238,10 @@ export default function ManagerNotificationPage() {
               );
             });
         }
+        // Refresh chat after sending
+        if (inboxRef.current && typeof inboxRef.current.refresh === "function") {
+          inboxRef.current.refresh();
+        }
       } else {
         setError(data.error || "Failed to send message.");
       }
@@ -320,7 +326,7 @@ export default function ManagerNotificationPage() {
         {/* Chat body */}
         <div className="flex-1 overflow-y-auto bg-gray-50 px-6 py-4">
           {selectedEmployee ? (
-            <EmployeeInboxPage employeeId={selectedEmployee.id} />
+            <EmployeeInboxPage ref={inboxRef} employeeId={selectedEmployee.id} />
           ) : (
             <div className="h-full flex items-center justify-center text-gray-400">
               Select an employee to view messages.
