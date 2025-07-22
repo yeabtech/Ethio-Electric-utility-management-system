@@ -159,7 +159,7 @@ export default function TechnicianReportPage() {
       // Convert report data to the format expected by the API
       const updatedReportData: {[key: string]: string} = { ...reportData }
       // Check for signature fields that are data URLs and upload them
-      let uploadedAttachments: Array<{ url: string, name: string, type: string, size: number }> = []
+      let uploadedAttachments: Array<{ url: string, name: string, type: string, size: number, fieldName?: string }> = []
       for (const field of selectedTemplate.fields || []) {
         if (field.type === 'signature' && updatedReportData[field.name] && updatedReportData[field.name].startsWith('data:image/')) {
           try {
@@ -171,9 +171,10 @@ export default function TechnicianReportPage() {
               // Add signature as an attachment
               uploadedAttachments.push({
                 url: uploadResult[0].url,
-                name: 'signature.png',
+                name: `${field.name}-signature.png`,
                 type: 'image/png',
-                size: blob.size
+                size: blob.size,
+                fieldName: field.name // add this property for clarity
               })
               // Remove signature URL from report data (or set to empty string)
               updatedReportData[field.name] = ''
@@ -205,6 +206,7 @@ export default function TechnicianReportPage() {
               name: attachments[idx]?.name || 'attachment',
               type: attachments[idx]?.type || '',
               size: attachments[idx]?.size || 0
+              // no fieldName for regular files
             })))
           } else {
             throw new Error('Failed to upload attachments')
