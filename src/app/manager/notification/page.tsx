@@ -108,7 +108,6 @@ export default function ManagerNotificationPage() {
             lastMessageAt: map[emp.id]?.lastMessageAt || null,
             unread: map[emp.id]?.unread || false,
           }))
-          .filter((entry) => entry.lastMessageAt) // Only show employees with a chat
           .sort((a, b) => {
             if (a.lastMessageAt && b.lastMessageAt) {
               return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime();
