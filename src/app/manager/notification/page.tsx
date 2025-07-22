@@ -63,16 +63,19 @@ export default function ManagerNotificationPage() {
       });
   }, []);
 
-  // Fetch inbox messages for sidebar (recent, unread)
+  // Fetch inbox and sent messages for sidebar (recent, unread, opened chats)
   useEffect(() => {
     if (!internalUserId) return;
-    fetch(`/api/messages?inbox=1&userId=${internalUserId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data.success) return;
-        // Build a map of employeeId -> { lastMessageAt, unread }
-        const map: Record<string, { lastMessageAt: string; unread: boolean }> = {};
-        for (const msg of data.messages) {
+    Promise.all([
+      fetch(`/api/messages?inbox=1&userId=${internalUserId}`).then((res) => res.json()),
+      fetch(`/api/messages?userId=${internalUserId}`).then((res) => res.json()),
+    ]).then(([inboxData, sentData]) => {
+      if (!inboxData.success && !sentData.success) return;
+      // Build a map of employeeId -> { lastMessageAt, unread }
+      const map: Record<string, { lastMessageAt: string; unread: boolean }> = {};
+      // Inbox: messages received from employees
+      if (inboxData.success) {
+        for (const msg of inboxData.messages) {
           const senderId = msg.sender?.id;
           if (senderId && senderId !== internalUserId) {
             if (!map[senderId] || new Date(msg.sentAt) > new Date(map[senderId].lastMessageAt)) {
@@ -82,14 +85,31 @@ export default function ManagerNotificationPage() {
             }
           }
         }
-        setSidebarEntries((prev) => {
-          // Merge with employees list
-          return employees.map((emp) => ({
+      }
+      // Sent: messages sent to employees
+      if (sentData.success) {
+        for (const msg of sentData.messages) {
+          if (Array.isArray(msg.recipients)) {
+            for (const rec of msg.recipients) {
+              const recId = rec.id;
+              if (recId && recId !== internalUserId) {
+                if (!map[recId] || new Date(msg.sentAt) > new Date(map[recId].lastMessageAt)) {
+                  map[recId] = { lastMessageAt: msg.sentAt, unread: false };
+                }
+              }
+            }
+          }
+        }
+      }
+      setSidebarEntries(
+        employees
+          .map((emp) => ({
             employee: emp,
             lastMessageAt: map[emp.id]?.lastMessageAt || null,
             unread: map[emp.id]?.unread || false,
-          })).sort((a, b) => {
-            // Sort by lastMessageAt desc, then name
+          }))
+          .filter((entry) => entry.lastMessageAt) // Only show employees with a chat
+          .sort((a, b) => {
             if (a.lastMessageAt && b.lastMessageAt) {
               return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime();
             } else if (a.lastMessageAt) {
@@ -99,9 +119,9 @@ export default function ManagerNotificationPage() {
             } else {
               return a.employee.name.localeCompare(b.employee.name);
             }
-          });
-        });
-      });
+          })
+      );
+    });
   }, [internalUserId, employees]);
 
   // Filter employees by search

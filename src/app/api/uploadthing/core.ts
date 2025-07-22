@@ -5,7 +5,8 @@ const f = createUploadthing();
 
 export const ourFileRouter = {
   serviceDocuments: f({
-    image: { maxFileSize: "4MB", maxFileCount: 5 }
+    blob: { maxFileSize: "16MB", maxFileCount: 5 },
+    "text/csv": { maxFileSize: "16MB", maxFileCount: 5 }
   })
     .onUploadComplete(({ file }) => {
       console.log("file uploaded", file.ufsUrl);

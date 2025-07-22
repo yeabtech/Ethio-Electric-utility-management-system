@@ -63,13 +63,13 @@ export default function EmployeeInboxPage({ employeeId }: EmployeeInboxPageProps
   }
 
   if (messages.length === 0) {
-    return <div className="text-gray-400 text-center py-8">No messages{employeeId ? " with this employee." : " in your inbox."}</div>;
+    return <div className="text-gray-400 text-center py-8">No messages yet</div>;
   }
 
   return (
     <div className="flex flex-col gap-2 h-full">
       <div className="flex-1 overflow-y-auto px-2 py-2">
-        {messages.map((msg) => {
+        {[...messages].reverse().map((msg) => {
           const isSentByMe = msg.sender?.id === internalUserId;
           return (
             <div
