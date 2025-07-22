@@ -9,7 +9,7 @@ import { Alert } from "@/components/ui/alert";
 import { useUploadThing } from "@/lib/uploadthing";
 import EmployeeInboxPage from "../../manager/notification/inbox";
 import { useUser } from "@clerk/nextjs";
-import { Bell, RefreshCw } from "lucide-react";
+import { Bell, RefreshCw, X, Menu } from "lucide-react";
 import { useRef as useComponentRef } from "react";
 
 interface Employee {
@@ -46,6 +46,7 @@ export default function TechnicianNotificationPage() {
   const { startUpload, isUploading } = useUploadThing("serviceDocuments");
   const [sidebarEntries, setSidebarEntries] = useState<SidebarEntry[]>([]);
   const inboxRef = useComponentRef<any>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // for mobile sidebar
 
   // Get internal user ID from Clerk user ID
   useEffect(() => {
@@ -350,7 +351,90 @@ export default function TechnicianNotificationPage() {
   return (
     <div className="min-h-screen w-full flex bg-gray-100">
       {/* Sidebar: Employee list */}
-      <div className="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 flex flex-col h-screen max-h-screen">
+      {/* Mobile sidebar overlay */}
+      <div
+        className={`fixed inset-0 z-40 md:hidden transition ${sidebarOpen ? "block" : "hidden"}`}
+        aria-hidden={!sidebarOpen}
+      >
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black bg-opacity-30"
+          onClick={() => setSidebarOpen(false)}
+        />
+        {/* Sidebar panel */}
+        <div className="relative w-4/5 max-w-xs h-full bg-white border-r border-gray-200 flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <Input
+              placeholder="Search employee by name or email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              autoComplete="off"
+              className="text-black bg-gray-100"
+            />
+            <button
+              onClick={handleManualRefresh}
+              className="ml-2 p-2 rounded hover:bg-gray-200"
+              title="Refresh"
+              type="button"
+            >
+              <RefreshCw className="w-5 h-5 text-black" />
+            </button>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="ml-2 p-2 rounded hover:bg-gray-200"
+              title="Close"
+              type="button"
+            >
+              <X className="w-5 h-5 text-black" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {sidebarEntries.length === 0 && (
+              <div className="p-4 text-gray-400 text-center">No employees found.</div>
+            )}
+            {sidebarEntries
+              .filter((entry) =>
+                !search ||
+                entry.employee.name.toLowerCase().includes(search.toLowerCase()) ||
+                entry.employee.email.toLowerCase().includes(search.toLowerCase())
+              )
+              .map((entry) => (
+                <div
+                  key={entry.employee.id}
+                  className={`px-4 py-3 cursor-pointer flex items-center gap-2 hover:bg-blue-50 border-b border-gray-100 ${selectedEmployee?.id === entry.employee.id ? "bg-blue-100" : ""}`}
+                  onClick={() => {
+                    handleSelectEmployee(entry.employee);
+                    setSidebarOpen(false); // close sidebar on mobile after selecting
+                  }}
+                >
+                  <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-lg font-bold text-blue-700 overflow-hidden">
+                    {entry.employee.imageUrl ? (
+                      <img
+                        src={entry.employee.imageUrl}
+                        alt={entry.employee.name}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      entry.employee.name[0]
+                    )}
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <span className="font-semibold text-black">{entry.employee.name}</span>
+                    <span className="text-xs text-gray-500">{entry.employee.email}</span>
+                    {entry.employee.location && (
+                      <span className="text-xs text-gray-400">{entry.employee.location}</span>
+                    )}
+                  </div>
+                  {entry.unread && (
+                    <Bell className="w-5 h-5 text-red-500" />
+                  )}
+                </div>
+              ))}
+          </div>
+        </div>
+      </div>
+      {/* Desktop sidebar */}
+      <div className="hidden md:flex w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 flex-col h-screen max-h-screen">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <Input
             placeholder="Search employee by name or email..."
@@ -413,6 +497,17 @@ export default function TechnicianNotificationPage() {
       <div className="flex-1 flex flex-col h-screen max-h-screen">
         {/* Chat header */}
         <div className="h-16 flex items-center px-6 border-b border-gray-200 bg-white shadow-sm">
+          {/* Mobile menu button */}
+          <div className="md:hidden mr-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded hover:bg-gray-200"
+              title="Show Employees"
+              type="button"
+            >
+              <Menu className="w-6 h-6 text-black" />
+            </button>
+          </div>
           {selectedEmployee ? (
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-lg font-bold text-blue-700 overflow-hidden">
