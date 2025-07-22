@@ -190,6 +190,7 @@ export default function NewConnectionPage() {
           userId: user?.id,
           connectionType: formData.connectionType,
           voltageLevel: formData.voltageLevel,
+          plotNumber: formData.plotNumber, // <-- ensure plot number is sent
           estimatedLoad: formData.estimatedLoad,
           documents: uploadedDocs,
           estimatedCost,
@@ -298,9 +299,7 @@ export default function NewConnectionPage() {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-end gap-4">
-          <Button onClick={() => router.push('/customer/dashboard')}>Back to Dashboard</Button>
-        </div>
+      
       </CardContent>
     </Card>
   )

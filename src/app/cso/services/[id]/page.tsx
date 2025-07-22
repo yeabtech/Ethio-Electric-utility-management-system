@@ -129,7 +129,12 @@ export default function ServiceDetailPage() {
               <Home className="w-5 h-5 text-blue-500" />
               <div>
                 <p className="text-sm text-gray-500">Plot Number</p>
-                <p>{service.metadata.plotNumber || 'Not provided'}</p>
+                <p>{
+                  service.metadata.plotNumber ||
+                  service.metadata.plot_number ||
+                  service.metadata.plotNo ||
+                  'Not provided'
+                }</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -149,24 +154,28 @@ export default function ServiceDetailPage() {
           <CardTitle>Submitted Documents</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {service.documents.map((doc, index) => (
-  <div key={index} className="border rounded-lg p-4 space-y-2">
-    <img 
-      src={doc}
-      alt={`Document ${index + 1}`}
-      className="w-full h-auto rounded shadow"
-    />
-    <a 
-      href={doc} 
-      target="_blank" 
-      rel="noopener noreferrer"
-      className="text-blue-600 hover:underline block text-sm"
-    >
-      Open Full Size
-    </a>
-  </div>
-))}
-
+          {service.documents && service.documents.length > 0 ? (
+            service.documents.filter(doc => typeof doc === 'string' && doc.startsWith('http')).map((doc, index) => (
+              <div key={index} className="border rounded-lg p-4 space-y-2">
+                <img 
+                  src={doc}
+                  alt={`Document ${index + 1}`}
+                  className="w-full h-auto rounded shadow"
+                  onError={e => { e.currentTarget.style.display = 'none'; }}
+                />
+                <a 
+                  href={doc} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline block text-sm"
+                >
+                  Open Full Size
+                </a>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500">No documents submitted.</p>
+          )}
         </CardContent>
       </Card>
 
