@@ -38,6 +38,23 @@ export async function GET(request: Request) {
         task: {
           select: {
             status: true,
+            scheduledAt: true,
+            technician: {
+              select: {
+                user: {
+                  select: {
+                    verification: {
+                      select: {
+                        firstName: true,
+                        lastName: true,
+                      },
+                      orderBy: { createdAt: 'desc' },
+                      take: 1,
+                    },
+                  },
+                },
+              },
+            },
             report: {
               select: {
                 id: true,
@@ -69,29 +86,38 @@ export async function GET(request: Request) {
     });
 
     // Manually map to ensure only the expected fields are sent
-    const safeApplications = applications.map(app => ({
-      ...app,
-      task: app.task
-        ? {
-            status: app.task.status,
-            report: app.task.report
-              ? {
-                  id: app.task.report.id,
-                  status: app.task.report.status,
-                  priority: app.task.report.priority,
-                  comments: app.task.report.comments,
-                }
-              : null,
-          }
-        : null,
-      receipt: app.receipt
-        ? {
-            status: app.receipt.status,
-            paid: app.receipt.paid,
-            paymentDate: app.receipt.paymentDate,
-          }
-        : null,
-    }));
+    const safeApplications = applications.map(app => {
+      let technicianName = null;
+      if (app.task?.technician?.user?.verification?.length) {
+        const v = app.task.technician.user.verification[0];
+        technicianName = `${v.firstName} ${v.lastName}`.trim();
+      }
+      return {
+        ...app,
+        task: app.task
+          ? {
+              status: app.task.status,
+              scheduledAt: app.task.scheduledAt,
+              technicianName,
+              report: app.task.report
+                ? {
+                    id: app.task.report.id,
+                    status: app.task.report.status,
+                    priority: app.task.report.priority,
+                    comments: app.task.report.comments,
+                  }
+                : null,
+            }
+          : null,
+        receipt: app.receipt
+          ? {
+              status: app.receipt.status,
+              paid: app.receipt.paid,
+              paymentDate: app.receipt.paymentDate,
+            }
+          : null,
+      };
+    });
 
     return NextResponse.json(safeApplications);
   } catch (error) {

@@ -31,6 +31,8 @@ interface ServiceApplicationWithDetails extends ServiceApplication {
         };
       }>;
     } | null;
+    technicianName?: string;
+    scheduledAt?: Date;
   } | null;
 }
 
@@ -178,6 +180,17 @@ export default function RequestResponsePage() {
                       <Badge className={getStatusColor(application.task.status)}>
                         {application.task.status}
                       </Badge>
+                      {/* Technician and Assigned Date */}
+                      {application.task.technicianName && (
+                        <div className="mt-2 text-sm text-black dark:text-black">
+                          <span className="font-medium">Technician:</span> {application.task.technicianName}
+                        </div>
+                      )}
+                      {application.task.scheduledAt && (
+                        <div className="text-sm text-black dark:text-black">
+                          <span className="font-medium">Assigned Date:</span> {format(new Date(application.task.scheduledAt), "PPP p")}
+                        </div>
+                      )}
                       {application.task.report && (
                         <div className="mt-2 p-4 bg-white dark:bg-white rounded-md">
                           <p className="text-sm font-medium text-black dark:text-black">Task done:</p>

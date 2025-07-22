@@ -273,7 +273,7 @@ export default function NewConnectionPage() {
           </div>
 
           {/* Submitted Documents */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h3 className="font-semibold text-lg text-black dark:text-black">Submitted Documents</h3>
             <div className="border rounded-lg p-4">
               <ul className="space-y-2">
@@ -285,7 +285,7 @@ export default function NewConnectionPage() {
                 ))}
               </ul>
             </div>
-          </div>
+          </div> */}
 
           {/* Important Notes */}
           <div className="bg-muted/50 p-4 rounded-lg">
@@ -293,14 +293,12 @@ export default function NewConnectionPage() {
             <ul className="text-sm space-y-2 text-black dark:text-black">
               <li>• Please keep this receipt for your records</li>
               <li>• Your application will be processed within 5-7 business days</li>
-              <li>• You will be notified via email about the status of your application</li>
               <li>• For any queries, please contact our customer service</li>
             </ul>
           </div>
         </div>
 
         <div className="mt-8 flex justify-end gap-4">
-          <Button variant="outline" onClick={() => window.print()}>Print Receipt</Button>
           <Button onClick={() => router.push('/customer/dashboard')}>Back to Dashboard</Button>
         </div>
       </CardContent>
