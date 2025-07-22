@@ -42,12 +42,7 @@ export async function POST(req: Request) {
     const clerkUser = await clerkClient.users.getUser(clerkUserId)
     const publicMetadata = clerkUser.publicMetadata as ClerkUserMetadata
     
-    if (publicMetadata.verificationStatus !== 'approved') {
-      return NextResponse.json(
-        { error: 'User verification required' },
-        { status: 403 }
-      )
-    }
+    
 
     // Find or create the corresponding User in your database
     const user = await prisma.user.upsert({
