@@ -105,7 +105,9 @@ const EmployeeInboxPage = forwardRef(function EmployeeInboxPage({ employeeId }: 
               {/* Avatar on left for received, right for sent */}
               {!isSentByMe && (
                 <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-200 flex items-center justify-center text-lg font-bold text-blue-700 mr-2">
-                  {msg.sender?.name ? msg.sender.name[0] : "?"}
+                  {msg.sender?.name && msg.sender.name.trim().length > 0
+                    ? msg.sender.name.trim()[0].toUpperCase()
+                    : (msg.sender?.email ? msg.sender.email[0].toUpperCase() : "-")}
                 </div>
               )}
               <div className={`max-w-[70%] flex flex-col ${isSentByMe ? "items-end" : "items-start"}`}>
