@@ -52,20 +52,14 @@ const EmployeeInboxPage = forwardRef(function EmployeeInboxPage({ employeeId }: 
       fetch(`/api/messages?userId=${internalUserId}`).then((res) => res.json()),
     ]).then(([inboxData, sentData]) => {
       let all: Message[] = [];
-      // Messages where I am a recipient and sender is the selected employee
       if (inboxData.success) {
         all = all.concat(
-          inboxData.messages.filter((msg: Message) =>
-            msg.sender?.id === employeeId &&
-            Array.isArray(msg.recipients) && msg.recipients.some((r) => r.id === internalUserId)
-          )
+          inboxData.messages.filter((msg: Message) => msg.sender?.id === employeeId)
         );
       }
-      // Messages where I am the sender and selected employee is a recipient
       if (sentData.success) {
         all = all.concat(
           sentData.messages.filter((msg: Message) =>
-            msg.sender?.id === internalUserId &&
             Array.isArray(msg.recipients) && msg.recipients.some((r) => r.id === employeeId)
           )
         );

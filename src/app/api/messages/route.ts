@@ -78,7 +78,13 @@ export async function GET(req: NextRequest) {
         attachments: Array.isArray(r.message.attachments)
           ? r.message.attachments.map((a) => ({ name: a.name, url: a.url }))
           : [],
-        sender: r.message.sender ? { name: r.message.sender.email, email: r.message.sender.email } : undefined,
+        sender: r.message.sender
+          ? {
+              id: r.message.sender.id,
+              name: r.message.sender.name || r.message.sender.email,
+              email: r.message.sender.email,
+            }
+          : undefined,
         read: r.read,
       }));
       return NextResponse.json({ success: true, messages });
