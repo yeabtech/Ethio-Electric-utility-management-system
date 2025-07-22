@@ -466,69 +466,86 @@ export default function CSOReportsPage() {
                       </div>
                     )}
 
-                                         {/* Attachments */}
-                     {report.attachments.length > 0 && (
-                       <div>
-                         <h4 className="font-medium text-gray-900 mb-2">Attachments</h4>
-                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                           {report.attachments.map((attachment) => (
-                             <div
-                               key={attachment.id}
-                               className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg"
-                             >
-                               {getAttachmentIcon(attachment.type)}
-                               <span className="text-sm text-gray-700 flex-1 truncate">
-                                 {attachment.name}
-                               </span>
-                               <Button
-                                 variant="ghost"
-                                 size="sm"
-                                 onClick={() => window.open(attachment.url, '_blank')}
-                                 className="flex items-center gap-1"
-                               >
-                                 <Eye className="w-4 h-4" />
-                                 View
-                               </Button>
-                             </div>
-                           ))}
-                         </div>
-                       </div>
-                     )}
+                    {/* Attachments */}
+                    {report.attachments.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-2">Attachments</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {report.attachments.map((attachment) => (
+                            <div
+                              key={attachment.id}
+                              className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg"
+                            >
+                              {getAttachmentIcon(attachment.type)}
+                              <span className="text-sm text-gray-700 flex-1 truncate">
+                                {attachment.name}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.open(attachment.url, '_blank')}
+                                className="flex items-center gap-1"
+                              >
+                                <Eye className="w-4 h-4" />
+                                View
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                     {/* Comments */}
-                     {report.comments.length > 0 && (
-                       <div>
-                         <h4 className="font-medium text-gray-900 mb-2">Comments</h4>
-                         <div className="space-y-3">
-                           {report.comments.map((comment) => (
-                             <div
-                               key={comment.id}
-                               className="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500"
-                             >
-                               <div className="flex items-center justify-between mb-2">
-                                 <span className="font-medium text-sm text-gray-900">
-                                   {comment.authorName}
-                                 </span>
-                                 <span className="text-xs text-gray-500">
-                                   {new Date(comment.createdAt).toLocaleDateString()} at{' '}
-                                   {new Date(comment.createdAt).toLocaleTimeString()}
-                                 </span>
-                               </div>
-                               <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                                 {comment.content}
-                               </p>
-                             </div>
-                           ))}
-                         </div>
-                       </div>
-                     )}
-                   </div>
-                 )}
-               </CardContent>
-             </Card>
-           ))
-         )}
-       </div>
+                    {/* Signature Image */}
+                    {(() => {
+                      const signatureAttachment = report.attachments.find(
+                        att => att.name.toLowerCase().includes('sign') && att.type.startsWith('image/')
+                      );
+                      return signatureAttachment ? (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-2">Signature</h4>
+                          <img
+                            src={signatureAttachment.url}
+                            alt="Signature"
+                            className="w-40 h-24 object-contain border rounded bg-white"
+                          />
+                        </div>
+                      ) : null;
+                    })()}
+
+                    {/* Comments */}
+                    {report.comments.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-2">Comments</h4>
+                        <div className="space-y-3">
+                          {report.comments.map((comment) => (
+                            <div
+                              key={comment.id}
+                              className="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500"
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-sm text-gray-900">
+                                  {comment.authorName}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {new Date(comment.createdAt).toLocaleDateString()} at{' '}
+                                  {new Date(comment.createdAt).toLocaleTimeString()}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                                {comment.content}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
       {/* Summary */}
       {filteredReports.length > 0 && (
