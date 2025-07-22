@@ -4,6 +4,12 @@ import { useEffect, useState, useRef, forwardRef, useImperativeHandle } from "re
 import { useUser } from "@clerk/nextjs";
 import { Download } from "lucide-react";
 
+interface MessageRecipient {
+  id: string;
+  name?: string;
+  read: boolean;
+}
+
 interface Message {
   id: string;
   subject?: string;
@@ -11,7 +17,7 @@ interface Message {
   sentAt: string;
   attachments?: { name: string; url: string }[];
   sender?: { name: string; email: string; id?: string };
-  recipients?: { id: string }[];
+  recipients?: MessageRecipient[];
   read: boolean;
 }
 
@@ -139,11 +145,17 @@ const EmployeeInboxPage = forwardRef(function EmployeeInboxPage({ employeeId }: 
                 <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
                   <span className="text-black">{new Date(msg.sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                   {/* Telegram-style checkmarks for sent messages */}
-                  {isSentByMe && (
-                    <span className={`ml-1 text-lg ${msg.read ? "text-blue-300" : "text-blue-600"}`} title={msg.read ? "Seen" : "Sent"}>
-                      {msg.read ? "✓✓" : "✓"}
-                    </span>
-                  )}
+                  {isSentByMe && (() => {
+                    const rec = Array.isArray(msg.recipients)
+                      ? msg.recipients.find(r => r.id === employeeId)
+                      : null;
+                    const isRead = rec ? rec.read : false;
+                    return (
+                      <span className={`ml-1 text-lg ${isRead ? "text-blue-300" : "text-blue-600"}`} title={isRead ? "Seen" : "Sent"}>
+                        {isRead ? "✓✓" : "✓"}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
               {isSentByMe && (
