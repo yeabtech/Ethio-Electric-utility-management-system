@@ -25,7 +25,9 @@ export async function GET() {
         const clerkUser = await clerkClient.users.getUser(employee.clerkUserId)
         return {
           ...employee,
-          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'N/A'
+          name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'N/A',
+          imageUrl: clerkUser.imageUrl,
+          location: employee.employeeInfo ? `${employee.employeeInfo.subCity}, Woreda ${employee.employeeInfo.woreda}` : null
         }
       })
     )
